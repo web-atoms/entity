@@ -4,7 +4,8 @@
   "description": "TypeScript classes and controls to edit entities exposed with Entity Access Control",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postversion": "git push --follow-tags"
   },
   "repository": {
     "type": "git",
