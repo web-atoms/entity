@@ -18,6 +18,19 @@ export interface IQueryFilter {
     include?: string[];
 }
 
+interface IBulkUpdateModel {
+    keys: IClrEntity[];
+    update: {
+        [key: string]: any;
+    };
+    throwWhenNotFound?: boolean;
+}
+
+interface IBulkDeleteModel {
+    keys: IClrEntity[];
+    throwWhenNotFound?: boolean;
+}
+
 @DISingleton()
 @BaseUrl("/api/entity/")
 export default class EntityRestService extends BaseService {
@@ -51,4 +64,13 @@ export default class EntityRestService extends BaseService {
         return null;
     }
 
+    @Post("bulk")
+    public bulkSave(@Body body: IBulkUpdateModel): Promise<IClrEntity> {
+        return null;
+    }
+
+    @Delete("bulk")
+    public bulkDelete(@Body body: IBulkDeleteModel): Promise<void> {
+        return null;
+    }
 }
