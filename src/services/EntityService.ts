@@ -207,4 +207,36 @@ export default class EntityService {
         return this.restApi.save(e);
     }
 
+    public async bulkSave(
+        entities: IClrEntity[],
+        update: IClrEntity,
+        throwWhenNotFound: boolean = false): Promise<void> {
+        const model = await this.model();
+        const keys = [];
+        for (const iterator of entities) {
+            const entityType = model.for(iterator.$type);
+            const key = { $type: iterator.$type };
+            for (const { name } of entityType.keys) {
+                key[name] = iterator[name];
+            }
+            keys.push(key);
+        }
+        await this.restApi.bulkSave({ keys, update, throwWhenNotFound });
+    }
+
+    public async bulkDelete(
+        entities: IClrEntity[],
+        throwWhenNotFound: boolean = false): Promise<void> {
+        const model = await this.model();
+        const keys = [];
+        for (const iterator of entities) {
+            const entityType = model.for(iterator.$type);
+            const key = { $type: iterator.$type };
+            for (const { name } of entityType.keys) {
+                key[name] = iterator[name];
+            }
+            keys.push(key);
+        }
+        await this.restApi.bulkDelete({ keys, throwWhenNotFound });
+    }
 }
