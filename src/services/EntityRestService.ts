@@ -18,15 +18,17 @@ export interface IQueryFilter {
     include?: string[];
 }
 
-interface IBulkUpdateModel {
+export interface IModifications {
+    [key: string]: any;
+}
+
+export interface IBulkUpdateModel {
     keys: IClrEntity[];
-    update: {
-        [key: string]: any;
-    };
+    update: IModifications;
     throwWhenNotFound?: boolean;
 }
 
-interface IBulkDeleteModel {
+export interface IBulkDeleteModel {
     keys: IClrEntity[];
     throwWhenNotFound?: boolean;
 }

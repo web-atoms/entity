@@ -4,7 +4,7 @@ import { Inject } from "@web-atoms/core/dist/di/Inject";
 import IClrEntity from "../models/IClrEntity";
 import { EntityContext } from "../models/IEntityModel";
 import IPagedList from "../models/IPagedList";
-import EntityRestService, { IQueryFilter } from "./EntityRestService";
+import EntityRestService, { IModifications, IQueryFilter } from "./EntityRestService";
 
 interface IMethod {
     query: string;
@@ -207,9 +207,20 @@ export default class EntityService {
         return this.restApi.save(e);
     }
 
-    public async bulkSave(
+    public async update(e: IClrEntity, update: IModifications): Promise<any> {
+        await this.bulkUpdate([e], update);
+        for (const key in update) {
+            if (Object.prototype.hasOwnProperty.call(update, key)) {
+                const element = update[key];
+                e[key] = element;
+            }
+        }
+        return e;
+    }
+
+    public async bulkUpdate(
         entities: IClrEntity[],
-        update: IClrEntity,
+        update: IModifications,
         throwWhenNotFound: boolean = false): Promise<void> {
         const model = await this.model();
         const keys = [];
