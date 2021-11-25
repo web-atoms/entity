@@ -66,7 +66,7 @@ export default class EntityRestService extends BaseService {
         return null;
     }
 
-    @Post("bulk")
+    @Put("bulk")
     public bulkSave(@Body body: IBulkUpdateModel): Promise<IClrEntity> {
         return null;
     }
