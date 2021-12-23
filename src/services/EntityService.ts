@@ -65,6 +65,7 @@ function resolve(target, map: any[]) {
                 target[key] = element;
             }
         }
+        return target;
     }
 
     for (const key in target) {
