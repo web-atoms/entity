@@ -169,6 +169,20 @@ export class Query<T extends IClrEntity> {
         return new Query(this.ec, this.name, this.filter, text, this.includeProps);
     }
 
+    /**
+     * Warning, will return all the items from the query, please use `toPagedList`
+     * for better performance
+     * @param cancelToken Cancel Token to cancel the query
+     * @returns Promise<T[]>
+     */
+    public async toArray({
+        cancelToken,
+        doNotResolve
+    }: IListParams = {}): Promise<T[]> {
+        const r = await this.toPagedList({ size: -1, cancelToken, doNotResolve });
+        return r.items;
+    }
+
     public async toPagedList(
         {
             start = 0,
@@ -191,6 +205,9 @@ export class Query<T extends IClrEntity> {
             filter.orderBy = this.orderBys;
         }
         const results = await this.ec.entityQuery<T>(this.name, filter, cancelToken);
+        if (cancelToken?.cancelled) {
+            throw new Error("cancelled");
+        }
         if (doNotResolve) {
             return results;
         }
@@ -199,15 +216,17 @@ export class Query<T extends IClrEntity> {
 
 }
 
-export interface IPagedListParams {
-    start?: number;
-    size?: number;
+export interface IListParams {
     cancelToken?: CancelToken;
 
     /**
      * Query will resolve references by replacing $id attributed objects
      */
     doNotResolve?: boolean;
+}
+export interface IPagedListParams extends IListParams {
+    start?: number;
+    size?: number;
 }
 
 export interface IModel<T> {
