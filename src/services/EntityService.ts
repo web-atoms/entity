@@ -37,6 +37,45 @@ class StringHelper {
 
 }
 
+function resolve(target, map: any[]) {
+    if (!target) {
+        return target;
+    }
+    if (typeof target !== "object") {
+        return target;
+    }
+
+    if (Array.isArray(target)) {
+        for (let index = 0; index < target.length; index++) {
+            const element = target[index];
+            target[index] = resolve(element, map);
+        }
+        return target;
+    }
+
+    const id = target.$id;
+    if (!target.$type && id) {
+        const existing = map[id];
+        for (const key in existing) {
+            if (key === "$id") {
+                continue;
+            }
+            if (Object.prototype.hasOwnProperty.call(existing, key)) {
+                const element = existing[key];
+                target[key] = element;
+            }
+        }
+    }
+
+    for (const key in target) {
+        if (Object.prototype.hasOwnProperty.call(target, key)) {
+            const element = target[key];
+            target[key] = resolve(element, map);
+        }
+    }
+    return target;
+}
+
 export class Query<T extends IClrEntity> {
 
     constructor(
@@ -117,8 +156,11 @@ export class Query<T extends IClrEntity> {
                 : names);
     }
 
-    public async firstOrDefault(ct?: CancelToken): Promise<T> {
-        const list = await this.toPagedList(0, 1, ct);
+    public async firstOrDefault(cancelToken?: CancelToken): Promise<T> {
+        const list = await this.toPagedList({
+            size: 1,
+            cancelToken
+        });
         return list.items[0];
     }
 
@@ -126,10 +168,13 @@ export class Query<T extends IClrEntity> {
         return new Query(this.ec, this.name, this.filter, text, this.includeProps);
     }
 
-    public toPagedList(
-        start: number = 0,
-        size: number = 100,
-        ct?: CancelToken): Promise<IPagedList<T>> {
+    public async toPagedList(
+        {
+            start = 0,
+            size = 100,
+            cancelToken,
+            doNotResolve
+        }: IPagedListParams = {}): Promise<IPagedList<T>> {
         const filter: IQueryFilter = {
             size,
             start
@@ -144,9 +189,24 @@ export class Query<T extends IClrEntity> {
         if (this.orderBys) {
             filter.orderBy = this.orderBys;
         }
-        return this.ec.entityQuery(this.name, filter, ct);
+        const results = await this.ec.entityQuery<T>(this.name, filter, cancelToken);
+        if (doNotResolve) {
+            return results;
+        }
+        return resolve(results, []);
     }
 
+}
+
+export interface IPagedListParams {
+    start?: number;
+    size?: number;
+    cancelToken?: CancelToken;
+
+    /**
+     * Query will resolve references by replacing $id attributed objects
+     */
+    doNotResolve?: boolean;
 }
 
 export interface IModel<T> {
