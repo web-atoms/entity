@@ -177,9 +177,10 @@ export class Query<T extends IClrEntity> {
      */
     public async toArray({
         cancelToken,
-        doNotResolve
+        doNotResolve,
+        hideActivityIndicator
     }: IListParams = {}): Promise<T[]> {
-        const r = await this.toPagedList({ size: -1, cancelToken, doNotResolve });
+        const r = await this.toPagedList({ size: -1, cancelToken, doNotResolve, hideActivityIndicator });
         return r.items;
     }
 
@@ -188,7 +189,8 @@ export class Query<T extends IClrEntity> {
             start = 0,
             size = 100,
             cancelToken,
-            doNotResolve
+            doNotResolve,
+            hideActivityIndicator
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         const filter: IQueryFilter = {
             size,
@@ -204,7 +206,16 @@ export class Query<T extends IClrEntity> {
         if (this.orderBys) {
             filter.orderBy = this.orderBys;
         }
-        const results = await this.ec.entityQuery<T>(this.name, filter, cancelToken);
+        let showProgress = true;
+        if (hideActivityIndicator) {
+            showProgress = this.ec.restApi.showProgress;
+            this.ec.restApi.showProgress = false;
+        }
+        const q = this.ec.entityQuery<T>(this.name, filter, cancelToken);
+        if (hideActivityIndicator) {
+            this.ec.restApi.showProgress = showProgress;
+        }
+        const results = await q;
         if (cancelToken?.cancelled) {
             throw new Error("cancelled");
         }
@@ -223,6 +234,11 @@ export interface IListParams {
      * Query will resolve references by replacing $id attributed objects
      */
     doNotResolve?: boolean;
+
+    /**
+     * Do not display activity indicator
+     */
+    hideActivityIndicator?: boolean;
 }
 export interface IPagedListParams extends IListParams {
     start?: number;
