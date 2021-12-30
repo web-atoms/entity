@@ -77,7 +77,7 @@ function resolve(target, map: any[]) {
     return target;
 }
 
-export class Query<T extends IClrEntity> {
+export class Query<T> {
 
     constructor(
         private ec: EntityService,
@@ -149,8 +149,7 @@ export class Query<T extends IClrEntity> {
             this.includeProps);
     }
 
-
-    public selectLinq(query: TemplateStringsArray, ... args: any[]): Query<T> {
+    public selectLinq<TR>(query: TemplateStringsArray, ... args: any[]): Query<TR> {
         let filters = "";
         const params = [];
         for (let index = 0; index < args.length; index++) {
@@ -240,7 +239,7 @@ export class Query<T extends IClrEntity> {
             (filter as any).select = this.select.query;
             (filter as any).selectParameters = JSON.stringify(this.select.parameters);
         }
-        const q = this.ec.entityQuery<T>(this.name, filter, cancelToken);
+        const q = this.ec.entityQuery(this.name, filter, cancelToken);
         if (hideActivityIndicator) {
             this.ec.restApi.showProgress = showProgress;
         }
@@ -249,7 +248,7 @@ export class Query<T extends IClrEntity> {
             throw new Error("cancelled");
         }
         if (doNotResolve) {
-            return results;
+            return results as any;
         }
         return resolve(results, []);
     }
