@@ -6,6 +6,40 @@ import { EntityContext } from "../models/IEntityModel";
 import IPagedList from "../models/IPagedList";
 import EntityRestService, { IModifications, IQueryFilter } from "./EntityRestService";
 
+const replacer = /(===)|(!==)|(\(\{})|(\.(some|map|filter|find)\s*\()|(\.[a-z])/g;
+
+const convertToLinq = (x: string) => {
+    return x.replace(replacer, (s) => {
+        switch (s) {
+            case "===": return "==";
+            case "!==": return "!=";
+            case "({": return "( new {";
+            case ".some(": return ".Any(";
+            case ".some (": return ".Any(";
+            case ".map(": return ".Select(";
+            case ".map (": return ".Select(";
+            case ".filter(": return ".Where(";
+            case ".filter (": return ".Where(";
+            case ".find(": return ".FirstOrDefault(";
+            case ".find (": return ".FirstOrDefault(";
+        }
+        return s.toUpperCase();
+    });
+};
+
+export interface ICollection<T> extends Array<T> {
+    where(filter: (item: T) => boolean): ICollection<T>;
+    any(filter: (item: T) => boolean): boolean;
+    select<TR>(select: (item: T) => TR): ICollection<T>;
+    firstOrDefault(filter: (item: T) => boolean): T;
+}
+
+const ArrayPrototype = Array.prototype as any;
+ArrayPrototype.where = ArrayPrototype.filter;
+ArrayPrototype.any = ArrayPrototype.some;
+ArrayPrototype.select = ArrayPrototype.map;
+ArrayPrototype.firstOrDefault = ArrayPrototype.find;
+
 interface IMethod {
     query: string;
     parameters: any[];
@@ -85,7 +119,7 @@ export class Query<T> {
         private filter: IMethod[] = null,
         private orderBys: string = null,
         private includeProps: string[] = null,
-        private select: IMethod = null) {
+        private selectExpression: IMethod = null) {
     }
 
     public where(p: Omit<T, "$type">): Query<T>;
@@ -120,11 +154,45 @@ export class Query<T> {
                 pl.push(element);
             }
         }
-        text = text.split(`(${x})`).join(x);
-        text = text.split("===").join("==");
-        text = text.split("!==").join("!=");
+        text = convertToLinq(text);
         return new Query(this.ec, this.name,
             append(this.filter, {query: text, parameters: pl}), this.orderBys, this.includeProps);
+    }
+
+    public select<TP, TR>(tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<TR> {
+
+        const pl = [];
+        let i = 0;
+        let text: string = "x => ";
+        if (arguments.length === 1) {
+            for (const key in tOrP as any) {
+                if (Object.prototype.hasOwnProperty.call(tOrP, key)) {
+                    const element = tOrP[key];
+                    text += `${i ? " && " : ""}x.${key} == @${i}`;
+                    pl.push(element);
+                }
+            }
+            const fx = { query: text, parameters : pl};
+            return new Query(this.ec, this.name,
+                append(this.filter, fx) , this.orderBys, this.includeProps );
+        }
+
+        const p = tOrP as any;
+        text = q(p).toString();
+        const x = StringHelper.findParameter(text);
+        const pfn = StringHelper.findParameter(q.toString()).trim();
+        for (const key in p) {
+            if (Object.prototype.hasOwnProperty.call(p, key)) {
+                const element = p[key];
+                const pn = `@${i++}`;
+                text = text.split(`${pfn}.${key}`).join(pn);
+                pl.push(element);
+            }
+        }
+        text = convertToLinq(text);
+        return new Query(this.ec, this.name,
+            this.filter, this.orderBys, this.includeProps,
+            {query: text, parameters: pl});
     }
 
     public whereLinq(query: TemplateStringsArray, ... args: any[]): Query<T> {
@@ -190,7 +258,7 @@ export class Query<T> {
     }
 
     public orderBy(text: string): Query<T> {
-        return new Query(this.ec, this.name, this.filter, text, this.includeProps, this.select);
+        return new Query(this.ec, this.name, this.filter, text, this.includeProps, this.selectExpression);
     }
 
     /**
@@ -235,9 +303,9 @@ export class Query<T> {
             showProgress = this.ec.restApi.showProgress;
             this.ec.restApi.showProgress = false;
         }
-        if (this.select) {
-            (filter as any).select = this.select.query;
-            (filter as any).selectParameters = JSON.stringify(this.select.parameters);
+        if (this.selectExpression) {
+            (filter as any).select = this.selectExpression.query;
+            (filter as any).selectParameters = JSON.stringify(this.selectExpression.parameters);
         }
         const q = this.ec.entityQuery(this.name, filter, cancelToken);
         if (hideActivityIndicator) {
