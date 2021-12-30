@@ -6,7 +6,7 @@ import { EntityContext } from "../models/IEntityModel";
 import IPagedList from "../models/IPagedList";
 import EntityRestService, { IMethodsFilter, IModifications, IQueryFilter } from "./EntityRestService";
 
-const replacer = /(===)|(!==)|(\(\{})|(\.(some|map|filter|find)\s*\()|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
+const replacer = /(===)|(!==)|(\(\{)|(\.(some|map|filter|find)\s*\()|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
 
 const convertToLinq = (x: string) => {
     return x.replace(replacer, (s) => {
@@ -26,7 +26,7 @@ const convertToLinq = (x: string) => {
             case ".includes (": return ".Contains(";
         }
         if (s.endsWith(":")) {
-            return s.substring(0, s.length - 2) + " = ";
+            return s.substring(0, s.length - 1) + " = ";
         }
         return s.toUpperCase();
     });
