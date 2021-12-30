@@ -37,6 +37,7 @@ export interface ICollection<T> extends Array<T> {
     any(filter: (item: T) => boolean): boolean;
     select<TR>(select: (item: T) => TR): ICollection<T>;
     firstOrDefault(filter: (item: T) => boolean): T;
+    count(filter?: (item: T) => boolean): number;
 }
 
 const ArrayPrototype = Array.prototype as any;
@@ -44,6 +45,18 @@ ArrayPrototype.where = ArrayPrototype.filter;
 ArrayPrototype.any = ArrayPrototype.some;
 ArrayPrototype.select = ArrayPrototype.map;
 ArrayPrototype.firstOrDefault = ArrayPrototype.find;
+ArrayPrototype.count = function(f) {
+    if (!f) {
+        return this.length;
+    }
+    let length = 0;
+    for (const iterator of this) {
+        if (f(iterator)) {
+            length++;
+        }
+    }
+    return length;
+};
 
 interface IMethod {
     query: string;
