@@ -209,7 +209,7 @@ export class Query<T> {
             }
         }
         text = convertToLinq(text);
-        return new Query(this.ec, this.name, append(this.methods, { where: [text, ... pl]}));
+        return new Query(this.ec, this.name, append(this.methods, { select: [text, ... pl]}));
     }
 
     /**
@@ -277,19 +277,23 @@ export class Query<T> {
     }
 
     public orderBy(filter: (i: T) => any): Query<T> {
-        return new Query(this.ec, this.name, append(this.methods, { orderBy: [filter.toString()]}));
+        const text = convertToLinq(filter.toString());
+        return new Query(this.ec, this.name, append(this.methods, { orderBy: [text]}));
     }
 
     public orderByDescending(filter: (i: T) => any): Query<T> {
-        return new Query(this.ec, this.name, append(this.methods, { orderByDescending: [filter.toString()]}));
+        const text = convertToLinq(filter.toString());
+        return new Query(this.ec, this.name, append(this.methods, { orderByDescending: [text]}));
     }
 
     public thenBy(filter: (i: T) => any): Query<T> {
-        return new Query(this.ec, this.name, append(this.methods, { thenBy: [filter.toString()]}));
+        const text = convertToLinq(filter.toString());
+        return new Query(this.ec, this.name, append(this.methods, { thenBy: [text]}));
     }
 
     public thenByDescending(filter: (i: T) => any): Query<T> {
-        return new Query(this.ec, this.name, append(this.methods, { thenByDescending: [filter.toString()]}));
+        const text = convertToLinq(filter.toString());
+        return new Query(this.ec, this.name, append(this.methods, { thenByDescending: [text]}));
     }
 
     /**
