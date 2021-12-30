@@ -33,11 +33,17 @@ const convertToLinq = (x: string) => {
 };
 
 export interface ICollection<T> extends Array<T> {
-    where(filter: (item: T) => boolean): ICollection<T>;
-    any(filter: (item: T) => boolean): boolean;
-    select<TR>(select: (item: T) => TR): ICollection<T>;
-    firstOrDefault(filter: (item: T) => boolean): T;
-    count(filter?: (item: T) => boolean): number;
+    where?(filter: (item: T) => boolean): ICollection<T>;
+    any?(filter: (item: T) => boolean): boolean;
+    select?<TR>(select: (item: T) => TR): ICollection<T>;
+    firstOrDefault?(filter: (item: T) => boolean): T;
+    count?(filter?: (item: T) => boolean): number;
+    toArray?(): ICollection<T>;
+    toList?(): ICollection<T>;
+    orderBy?(item: (item: T) => any): ICollection<T>;
+    thenBy?(item: (item: T) => any): ICollection<T>;
+    orderByDescending?(item: (item: T) => any): ICollection<T>;
+    thenByDescending?(item: (item: T) => any): ICollection<T>;
 }
 
 const ArrayPrototype = Array.prototype as any;
