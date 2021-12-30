@@ -22,6 +22,8 @@ const convertToLinq = (x: string) => {
             case ".filter (": return ".Where(";
             case ".find(": return ".FirstOrDefault(";
             case ".find (": return ".FirstOrDefault(";
+            case ".includes(": return ".Contains(";
+            case ".includes (": return ".Contains(";
         }
         return s.toUpperCase();
     });
@@ -164,19 +166,6 @@ export class Query<T> {
         const pl = [];
         let i = 0;
         let text: string = "x => ";
-        if (arguments.length === 1) {
-            for (const key in tOrP as any) {
-                if (Object.prototype.hasOwnProperty.call(tOrP, key)) {
-                    const element = tOrP[key];
-                    text += `${i ? " && " : ""}x.${key} == @${i}`;
-                    pl.push(element);
-                }
-            }
-            const fx = { query: text, parameters : pl};
-            return new Query(this.ec, this.name,
-                append(this.filter, fx) , this.orderBys, this.includeProps );
-        }
-
         const p = tOrP as any;
         text = q(p).toString();
         const x = StringHelper.findParameter(text);
