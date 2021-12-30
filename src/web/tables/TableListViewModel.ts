@@ -57,15 +57,12 @@ export default class TableListViewModel extends AtomViewModel {
         const filter = {
             start: this.filter.start,
             size: this.filter.size,
-            filter: this.filter.filter,
-            parameters: this.filter.parameters,
+            methods: JSON.stringify( [{
+                where: [this.filter.filter, ... this.filter.parameters],
+            }]),
             _v: this.version
         };
-        if (!(filter.parameters || filter.filter)) {
-            delete filter.parameters;
-            delete filter.filter;
-        }
-        this.list = await this.entityService.entityQuery(this.table, filter, ct);
+        this.list = await this.entityService.restApi.query(this.table, filter, ct);
     }
 
     public refreshSearch() {
