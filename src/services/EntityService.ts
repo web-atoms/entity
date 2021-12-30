@@ -4,7 +4,7 @@ import { Inject } from "@web-atoms/core/dist/di/Inject";
 import IClrEntity from "../models/IClrEntity";
 import { EntityContext } from "../models/IEntityModel";
 import IPagedList from "../models/IPagedList";
-import EntityRestService, { IModifications, IQueryFilter } from "./EntityRestService";
+import EntityRestService, { IMethodsFilter, IModifications, IQueryFilter } from "./EntityRestService";
 
 const replacer = /(===)|(!==)|(\(\{})|(\.(some|map|filter|find)\s*\()|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
 
@@ -135,15 +135,26 @@ function resolve(target, map: any[]) {
     return target;
 }
 
+interface IQueryMethod {
+    select?: [string, ... any[]];
+    where?: [string, ... any[]];
+    orderBy?: [string, ... any[]];
+    orderByDescending?: [string, ... any[]];
+    thenBy?: [string, ... any];
+    thenByDescending?: [string, ... any[]];
+    include?: [string];
+}
+
 export class Query<T> {
 
     constructor(
         private ec: EntityService,
         private name: string,
-        private filter: IMethod[] = null,
-        private orderBys: string = null,
-        private includeProps: string[] = null,
-        private selectExpression: IMethod = null) {
+        private methods: IQueryMethod[]
+        ) {
+        if (!methods) {
+            throw new Error("Methods cannot be empty");
+        }
     }
 
     public where(p: Omit<T, "$type">): Query<T>;
@@ -161,9 +172,7 @@ export class Query<T> {
                     pl.push(element);
                 }
             }
-            const fx = { query: text, parameters : pl};
-            return new Query(this.ec, this.name,
-                append(this.filter, fx) , this.orderBys, this.includeProps );
+            return new Query(this.ec, this.name, append(this.methods, { where: [text, ... pl]}));
         }
 
         const p = tOrP as any;
@@ -179,8 +188,7 @@ export class Query<T> {
             }
         }
         text = convertToLinq(text);
-        return new Query(this.ec, this.name,
-            append(this.filter, {query: text, parameters: pl}), this.orderBys, this.includeProps);
+        return new Query(this.ec, this.name, append(this.methods, { where: [text, ... pl]}));
     }
 
     public select<TP, TR>(tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<TR> {
@@ -201,11 +209,13 @@ export class Query<T> {
             }
         }
         text = convertToLinq(text);
-        return new Query(this.ec, this.name,
-            this.filter, this.orderBys, this.includeProps,
-            {query: text, parameters: pl});
+        return new Query(this.ec, this.name, append(this.methods, { where: [text, ... pl]}));
     }
 
+    /**
+     * @param args any[]
+     * @returns Query<T>
+     */
     public whereLinq(query: TemplateStringsArray, ... args: any[]): Query<T> {
         let filters = "";
         const params = [];
@@ -223,9 +233,10 @@ export class Query<T> {
         if (last) {
             filters += last;
         }
-        return new Query(this.ec, this.name, append(this.filter, { query: filters, parameters: params }),
-            this.orderBys,
-            this.includeProps);
+        // return new Query(this.ec, this.name, append(this.filter, { query: filters, parameters: params }),
+        //     this.orderBys,
+        //     this.includeProps);
+        return new Query(this.ec, this.name, append(this.methods, { where: [filters, ... params]}));
     }
 
     public selectLinq<TR>(query: TemplateStringsArray, ... args: any[]): Query<TR> {
@@ -245,19 +256,16 @@ export class Query<T> {
         if (last) {
             filters += last;
         }
-        return new Query(this.ec, this.name, this.filter,
-            this.orderBys,
-            this.includeProps,
-            { query: filters, parameters: params });
+        return new Query(this.ec, this.name, append(this.methods, { select: [filters, ... params]}));
     }
 
     public include<P extends keyof T>(... n: P[]): Query<T> {
         const names = n as any;
-        return new Query(this.ec, this.name, this.filter,
-            this.orderBys,
-            this.includeProps
-                ? [ ... this.includeProps, ... names ]
-                : names);
+        let start = this.methods;
+        for (const iterator of n) {
+            start = append(start, { include: [iterator.toString()] });
+        }
+        return new Query(this.ec, this.name, start);
     }
 
     public async firstOrDefault(cancelToken?: CancelToken): Promise<T> {
@@ -268,8 +276,20 @@ export class Query<T> {
         return list.items[0];
     }
 
-    public orderBy(text: string): Query<T> {
-        return new Query(this.ec, this.name, this.filter, text, this.includeProps, this.selectExpression);
+    public orderBy(filter: (i: T) => any): Query<T> {
+        return new Query(this.ec, this.name, append(this.methods, { orderBy: [filter.toString()]}));
+    }
+
+    public orderByDescending(filter: (i: T) => any): Query<T> {
+        return new Query(this.ec, this.name, append(this.methods, { orderByDescending: [filter.toString()]}));
+    }
+
+    public thenBy(filter: (i: T) => any): Query<T> {
+        return new Query(this.ec, this.name, append(this.methods, { thenBy: [filter.toString()]}));
+    }
+
+    public thenByDescending(filter: (i: T) => any): Query<T> {
+        return new Query(this.ec, this.name, append(this.methods, { thenByDescending: [filter.toString()]}));
     }
 
     /**
@@ -295,30 +315,17 @@ export class Query<T> {
             doNotResolve,
             hideActivityIndicator
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
-        const filter: IQueryFilter = {
+        const filter: IMethodsFilter = {
+            methods: JSON.stringify(this.methods),
             size,
             start
         };
-        if (this.filter && this.filter.length) {
-            filter.filter = JSON.stringify(this.filter.map((x) => x.query));
-            filter.parameters = JSON.stringify(this.filter.map((x) => x.parameters)) as any;
-        }
-        if (this.includeProps) {
-            filter.include = JSON.stringify(this.includeProps) as any;
-        }
-        if (this.orderBys) {
-            filter.orderBy = this.orderBys;
-        }
         let showProgress = true;
         if (hideActivityIndicator) {
             showProgress = this.ec.restApi.showProgress;
             this.ec.restApi.showProgress = false;
         }
-        if (this.selectExpression) {
-            (filter as any).select = this.selectExpression.query;
-            (filter as any).selectParameters = JSON.stringify(this.selectExpression.parameters);
-        }
-        const q = this.ec.entityQuery(this.name, filter, cancelToken);
+        const q = this.ec.restApi.query(this.name, filter, cancelToken);
         if (hideActivityIndicator) {
             this.ec.restApi.showProgress = showProgress;
         }
@@ -373,30 +380,30 @@ export default class EntityService {
         return this.entityModel;
     }
 
-    public async get(name: string, query: IQueryFilter, ct?: CancelToken): Promise<IClrEntity> {
-        const r = await this.entityQuery(name, query, ct);
-        return r.items[0];
-    }
+    // public async get(name: string, query: IQueryFilter, ct?: CancelToken): Promise<IClrEntity> {
+    //     const r = await this.entityQuery(name, query, ct);
+    //     return r.items[0];
+    // }
 
     public query<T extends IClrEntity>(m: IModel<T>): Query<T> {
-        return new Query(this, m.name);
+        return new Query(this, m.name, []);
     }
 
-    public entityQuery<T extends IClrEntity>(
-        name: string,
-        query: IQueryFilter,
-        ct?: CancelToken): Promise<IPagedList<T>> {
-        if (typeof query.keys === "object") {
-            query.keys = JSON.stringify(query.keys) as any;
-        }
-        if (typeof query.parameters === "object") {
-            query.parameters = JSON.stringify(query.parameters) as any;
-        }
-        if (typeof(query.include) === "object") {
-            query.include = JSON.stringify(query.include) as any;
-        }
-        return this.restApi.query(name, query, ct) as any;
-    }
+    // public entityQuery<T extends IClrEntity>(
+    //     name: string,
+    //     query: IQueryFilter,
+    //     ct?: CancelToken): Promise<IPagedList<T>> {
+    //     if (typeof query.keys === "object") {
+    //         query.keys = JSON.stringify(query.keys) as any;
+    //     }
+    //     if (typeof query.parameters === "object") {
+    //         query.parameters = JSON.stringify(query.parameters) as any;
+    //     }
+    //     if (typeof(query.include) === "object") {
+    //         query.include = JSON.stringify(query.include) as any;
+    //     }
+    //     return this.restApi.query(name, query, ct) as any;
+    // }
 
     public delete(e: IClrEntity): Promise<void> {
         return this.restApi.delete(e);

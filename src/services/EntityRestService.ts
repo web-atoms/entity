@@ -8,6 +8,12 @@ import IClrEntity, { IProperties } from "../models/IClrEntity";
 import IEntityModel from "../models/IEntityModel";
 import IPagedList from "../models/IPagedList";
 
+export interface IMethodsFilter {
+    methods: string;
+    start: number;
+    size: number;
+}
+
 export interface IQueryFilter {
     filter?: string;
     parameters?: any[];
@@ -42,10 +48,10 @@ export default class EntityRestService extends BaseService {
         return null;
     }
 
-    @Get("query/{entity}")
+    @Get("methods/{entity}")
     public query(
         @Path("entity") entity: string,
-        @Queries query: IQueryFilter,
+        @Queries query: IMethodsFilter,
         @Cancel ct: CancelToken
     ): Promise<IPagedList<IClrEntity>> {
         return null;
