@@ -84,7 +84,8 @@ export class Query<T extends IClrEntity> {
         private name: string,
         private filter: IMethod[] = null,
         private orderBys: string = null,
-        private includeProps: string[] = null) {
+        private includeProps: string[] = null,
+        private select: IMethod = null) {
     }
 
     public where(p: Omit<T, "$type">): Query<T>;
@@ -148,6 +149,30 @@ export class Query<T extends IClrEntity> {
             this.includeProps);
     }
 
+
+    public selectLinq(query: TemplateStringsArray, ... args: any[]): Query<T> {
+        let filters = "";
+        const params = [];
+        for (let index = 0; index < args.length; index++) {
+            const element = args[index];
+            const raw = query.raw[index];
+            if (raw) {
+                filters += raw;
+            }
+            const pi = `@${index}`;
+            filters += pi;
+            params.push(element);
+        }
+        const last = query.raw[args.length];
+        if (last) {
+            filters += last;
+        }
+        return new Query(this.ec, this.name, this.filter,
+            this.orderBys,
+            this.includeProps,
+            { query: filters, parameters: params });
+    }
+
     public include<P extends keyof T>(... n: P[]): Query<T> {
         const names = n as any;
         return new Query(this.ec, this.name, this.filter,
@@ -166,7 +191,7 @@ export class Query<T extends IClrEntity> {
     }
 
     public orderBy(text: string): Query<T> {
-        return new Query(this.ec, this.name, this.filter, text, this.includeProps);
+        return new Query(this.ec, this.name, this.filter, text, this.includeProps, this.select);
     }
 
     /**
@@ -210,6 +235,10 @@ export class Query<T extends IClrEntity> {
         if (hideActivityIndicator) {
             showProgress = this.ec.restApi.showProgress;
             this.ec.restApi.showProgress = false;
+        }
+        if (this.select) {
+            (filter as any).select = this.select.query;
+            (filter as any).selectParameters = JSON.stringify(this.select.parameters);
         }
         const q = this.ec.entityQuery<T>(this.name, filter, cancelToken);
         if (hideActivityIndicator) {
