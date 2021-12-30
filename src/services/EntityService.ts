@@ -191,7 +191,14 @@ export class Query<T> {
         return new Query(this.ec, this.name, append(this.methods, { where: [text, ... pl]}));
     }
 
-    public select<TP, TR>(tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<TR> {
+    public select<TR>(q: (x: T) => TR): Query<TR>;
+    public select<TP, TR>(tp: TP,  q: (p: TP) => (x: T) => TR): Query<TR>;
+    public select<TP, TR>(tOrP: TP | ((x: T) => TR), q?: (p: TP) => (x: T) => TR): Query<TR> {
+
+        if (arguments.length === 1) {
+            const select = convertToLinq(tOrP.toString());
+            return new Query(this.ec, this.name, append(this.methods, { select: [select]}));
+        }
 
         const pl = [];
         let i = 0;
