@@ -62,6 +62,11 @@ export class EntitySet<T> {
             }
             return;
         }
+        for (const property of model.properties) {
+            if (!item.hasOwnProperty(property.name)) {
+                item[property.name] = null;
+            }
+        }
         this.primary[JSON.stringify(keys)] = item;
     }
 
