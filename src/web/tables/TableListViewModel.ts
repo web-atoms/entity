@@ -9,8 +9,8 @@ import { AtomViewModel, Watch } from "@web-atoms/core/dist/view-model/AtomViewMo
 import Load from "@web-atoms/core/dist/view-model/Load";
 import IClrEntity from "../../models/IClrEntity";
 import IPagedList from "../../models/IPagedList";
+import EntityService from "../../services/BaseEntityService";
 import { IQueryFilter } from "../../services/EntityRestService";
-import EntityService from "../../services/EntityService";
 
 export default class TableListViewModel extends AtomViewModel {
 

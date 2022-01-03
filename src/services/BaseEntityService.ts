@@ -51,6 +51,28 @@ ArrayPrototype.where = ArrayPrototype.filter;
 ArrayPrototype.any = ArrayPrototype.some;
 ArrayPrototype.select = ArrayPrototype.map;
 ArrayPrototype.firstOrDefault = ArrayPrototype.find;
+ArrayPrototype.orderBy = function(f) {
+    return this.sort((a, b) => {
+        const ak = f(a);
+        const bk = f(b);
+        if (typeof ak === "string") {
+            return ak.toLowerCase().localeCompare((bk as string).toLowerCase());
+        }
+        return ak - bk;
+    });
+};
+ArrayPrototype.thenBy = ArrayPrototype.orderBy;
+ArrayPrototype.orderByDescending = function(f) {
+    return this.sort((a, b) => {
+        const ak = f(a);
+        const bk = f(b);
+        if (typeof ak === "string") {
+            return bk.toLowerCase().localeCompare((ak as string).toLowerCase());
+        }
+        return bk - ak;
+    });
+};
+ArrayPrototype.thenByDescending = ArrayPrototype.orderByDescending;
 ArrayPrototype.count = function(f) {
     if (!f) {
         return this.length;
@@ -135,7 +157,7 @@ function resolve(target, map: any[]) {
     return target;
 }
 
-interface IQueryMethod {
+export interface IQueryMethod {
     select?: [string, ... any[]];
     where?: [string, ... any[]];
     orderBy?: [string, ... any[]];
@@ -148,7 +170,7 @@ interface IQueryMethod {
 export class Query<T> {
 
     constructor(
-        private ec: EntityService,
+        private ec: BaseEntityService,
         private name: string,
         private methods: IQueryMethod[]
         ) {
@@ -374,8 +396,7 @@ export interface IModel<T> {
     name: string;
 }
 
-@DISingleton()
-export default class EntityService {
+export default class BaseEntityService {
 
     @Inject
     public restApi: EntityRestService;

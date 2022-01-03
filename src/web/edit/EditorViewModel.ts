@@ -3,7 +3,7 @@ import Action from "@web-atoms/core/dist/view-model/Action";
 import { AtomWindowViewModel } from "@web-atoms/core/dist/view-model/AtomWindowViewModel";
 import Load from "@web-atoms/core/dist/view-model/Load";
 import IClrEntity from "../../models/IClrEntity";
-import EntityService from "../../services/EntityService";
+import EntityService from "../../services/BaseEntityService";
 
 export interface IPropertyValue {
     readonly: boolean;
