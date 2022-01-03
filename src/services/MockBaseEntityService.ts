@@ -43,9 +43,9 @@ export class EntitySet<T> {
         this.name = model.name;
     }
 
-    public add(... items: T[]) {
+    public add(... items: Array<Partial<T>>) {
         for (const item of items) {
-            this.save(item);
+            this.save(item as any);
         }
     }
 
