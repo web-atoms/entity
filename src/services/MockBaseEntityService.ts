@@ -39,7 +39,7 @@ export class EntitySet<T> {
 
     private primary: {[key: string]: T} = {};
 
-    constructor(model: IModel<T>, protected readonly entityService: MockEntityService) {
+    constructor(model: IModel<T>, protected readonly entityService: MockBaseEntityService) {
         this.name = model.name;
     }
 
@@ -89,7 +89,7 @@ export class EntitySet<T> {
 
 class MockEntityRestService {
 
-    constructor(private es: MockEntityService) {}
+    constructor(private es: MockBaseEntityService) {}
 
     public async query(
         entity: string,
@@ -183,7 +183,7 @@ class MockEntityRestService {
 
 }
 
-export default class MockEntityService extends BaseEntityService {
+export default class MockBaseEntityService extends BaseEntityService {
 
     public restApi: EntityRestService = new MockEntityRestService(this) as any;
 
