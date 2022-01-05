@@ -31,7 +31,7 @@ const convertToLinq = (x: string) => {
         return s.toUpperCase();
     });
     // reduce white space...
-    return x.replace(/\w+/g, " ");
+    return x.replace(/\s+/g, " ");
 };
 
 export interface ICollection<T> extends Array<T> {
