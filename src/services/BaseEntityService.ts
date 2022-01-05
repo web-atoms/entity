@@ -382,7 +382,8 @@ export class Query<T> {
         if (doNotResolve) {
             return results as any;
         }
-        return resolve(results);
+        results.items = resolve(results.items);
+        return results as any;
     }
 
 }
