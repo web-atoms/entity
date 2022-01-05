@@ -153,9 +153,6 @@ function resolve(target) {
         return;
     }
     if (typeof target === "object") {
-        if (target) {
-            return target;
-        }
         mapIds(target);
         for (const iterator of pending) {
             const existing = cache[iterator.$id];
