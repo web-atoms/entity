@@ -9,7 +9,7 @@ import EntityRestService, { IMethodsFilter, IModifications, IQueryFilter } from 
 const replacer = /(===)|(!==)|(\(\{)|(\.(some|map|filter|find)\s*\()|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
 
 const convertToLinq = (x: string) => {
-    return x.replace(replacer, (s) => {
+    x = x.replace(replacer, (s) => {
         switch (s) {
             case "===": return "==";
             case "!==": return "!=";
@@ -30,6 +30,8 @@ const convertToLinq = (x: string) => {
         }
         return s.toUpperCase();
     });
+    // reduce white space...
+    return x.replace(/\w+/g, " ");
 };
 
 export interface ICollection<T> extends Array<T> {
