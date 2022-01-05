@@ -144,7 +144,7 @@ function resolve(target) {
             if (Object.prototype.hasOwnProperty.call(t, key)) {
                 const element = t[key];
                 if (element !== null && typeof element === "object") {
-                    mapIds(t);
+                    mapIds(element);
                 }
             }
         }
