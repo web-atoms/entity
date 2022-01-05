@@ -117,41 +117,55 @@ class StringHelper {
 
 }
 
-function resolve(target, map: any[]) {
-    if (!target) {
-        return target;
-    }
-    if (typeof target !== "object") {
-        return target;
-    }
-
-    if (Array.isArray(target)) {
-        for (let index = 0; index < target.length; index++) {
-            const element = target[index];
-            target[index] = resolve(element, map);
+function resolve(target) {
+    const cache = [];
+    const pending = [];
+    function mapIds(t) {
+        if (Array.isArray(t)) {
+            for (const iterator of t) {
+                mapIds(iterator);
+            }
+            return;
         }
-        return target;
+        const { $id, $type } = t;
+        if ($type) {
+            if (cache[$id]) {
+                // we have read this...
+                return;
+            }
+            cache[$id] = t;
+        } else {
+            pending.push(t);
+            return;
+        }
+        for (const key in t) {
+            if (Object.prototype.hasOwnProperty.call(t, key)) {
+                const element = t[key];
+                if (element !== null && typeof element === "object") {
+                    mapIds(t);
+                }
+            }
+        }
     }
-
-    const id = target.$id;
-    if (!target.$type && id) {
-        const existing = map[id];
-        for (const key in existing) {
-            if (key === "$id") {
+    if (target === null) {
+        return;
+    }
+    if (typeof target === "object") {
+        if (target) {
+            return target;
+        }
+        mapIds(target);
+        for (const iterator of pending) {
+            const existing = cache[iterator.$id];
+            if (!existing) {
                 continue;
             }
-            if (Object.prototype.hasOwnProperty.call(existing, key)) {
-                const element = existing[key];
-                target[key] = element;
+            for (const key in existing) {
+                if (Object.prototype.hasOwnProperty.call(existing, key)) {
+                    const element = existing[key];
+                    iterator[key] = element;
+                }
             }
-        }
-        return target;
-    }
-
-    for (const key in target) {
-        if (Object.prototype.hasOwnProperty.call(target, key)) {
-            const element = target[key];
-            target[key] = resolve(element, map);
         }
     }
     return target;
@@ -369,7 +383,7 @@ export class Query<T> {
         if (doNotResolve) {
             return results as any;
         }
-        return resolve(results, []);
+        return resolve(results);
     }
 
 }
