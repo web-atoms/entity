@@ -35,7 +35,7 @@ const convertToLinq = (x: string) => {
 export interface ICollection<T> extends Array<T> {
     where?(filter: (item: T) => boolean): ICollection<T>;
     any?(filter: (item: T) => boolean): boolean;
-    select?<TR>(select: (item: T) => TR): ICollection<T>;
+    select?<TR>(select: (item: T) => TR): ICollection<TR>;
     firstOrDefault?(filter: (item: T) => boolean): T;
     count?(filter?: (item: T) => boolean): number;
     toArray?(): ICollection<T>;
