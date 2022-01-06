@@ -1,4 +1,5 @@
 import { CancelToken } from "@web-atoms/core/dist/core/types";
+import JsonError from "@web-atoms/core/dist/services/http/JsonError";
 
 export type URIWithSearchParams = [string, {[k: string]: any}];
 
@@ -63,6 +64,21 @@ export default class HttpSession {
         }
         const response = await fetch(options.url, options);
         const contentType = response.headers.get("Content-Type")?.toString() as string;
+        if (response.status >= 400) {
+            if (contentType && !contentType.includes("/json")) {
+                const error = await response.json();
+                throw new JsonError(
+                    typeof response === "string"
+                    ? response
+                    : ( error.title
+                    ?? error.detail
+                    ?? error.message
+                    ?? error.exceptionMessage
+                    ?? error
+                    ?? "Json Server Error"), error);
+            }
+            throw new Error(await response.text());
+        }
         if (contentType && !contentType.includes("/json")) {
             // throw new Error(`Unable to convert to json\r\n${contentType}\r\n${await response.text()}`);
             throw new Error(`Unable to convert to json\r\n${contentType}}`);
