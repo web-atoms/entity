@@ -1,4 +1,4 @@
-import CancelToken from "../models/CancelToken";
+import { CancelToken } from "@web-atoms/core/dist/core/types";
 import IClrEntity from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
 import HttpSession from "./HttpSession";
@@ -112,7 +112,6 @@ export interface IBulkDeleteModel {
     keys: IClrEntity[];
     throwWhenNotFound?: boolean;
 }
-
 
 export function append<T>(original: T[], item: T) {
     if (original) {

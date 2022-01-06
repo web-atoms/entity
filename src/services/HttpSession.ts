@@ -1,4 +1,4 @@
-import CancelToken from "../models/CancelToken";
+import { CancelToken } from "@web-atoms/core/dist/core/types";
 
 export type URIWithSearchParams = [string, {[k: string]: any}];
 
