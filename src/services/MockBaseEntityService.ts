@@ -2,7 +2,8 @@ import { CancelToken } from "@web-atoms/core/dist/core/types";
 import IClrEntity from "../models/IClrEntity";
 import { EntityContext } from "../models/IEntityModel";
 import IPagedList from "../models/IPagedList";
-import BaseEntityService, { IModel, IQueryMethod, Query } from "./BaseEntityService";
+import BaseEntityService, { IModel, IQueryMethod } from "./BaseEntityService";
+import Query from "./Query";
 import EntityRestService, { IBulkDeleteModel , IBulkUpdateModel, IMethodsFilter} from "./EntityRestService";
 
 const replacer = /(\.[a-z0-9\_])|([a-z0-9\_]\())/ig;

@@ -39,21 +39,20 @@ export interface IBulkDeleteModel {
     throwWhenNotFound?: boolean;
 }
 
-@DISingleton()
-@BaseUrl("/api/entity/")
-export default class EntityRestService extends BaseService {
+export default class EntityRestService {
+
+    public static query(
+        url: string,
+        query: IMethodsFilter,
+        ct: CancelToken
+    ): Promise<IPagedList<IClrEntity>> {
+        fetch({
+            url:
+        })
+    }
 
     @Get("model")
     public model(): Promise<IEntityModel[]> {
-        return null;
-    }
-
-    @Get("methods/{entity}")
-    public query(
-        @Path("entity") entity: string,
-        @Queries query: IMethodsFilter,
-        @Cancel ct: CancelToken
-    ): Promise<IPagedList<IClrEntity>> {
         return null;
     }
 
