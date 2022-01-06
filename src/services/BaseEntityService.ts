@@ -1,11 +1,9 @@
-import { CancelToken } from "@web-atoms/core/dist/core/types";
-import DISingleton from "@web-atoms/core/dist/di/DISingleton";
-import { Inject } from "@web-atoms/core/dist/di/Inject";
+import CancelToken from "../models/CancelToken";
 import IClrEntity from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
-import EntityRestService, { IModifications, IQueryFilter } from "./EntityRestService";
 import HttpSession from "./HttpSession";
 import Query from "./Query";
+import resolve from "./resolve";
 
 const replacer = /(===)|(!==)|(\(\{)|(\.(some|map|filter|find)\s*\()|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
 
@@ -94,6 +92,28 @@ interface IMethod {
     parameters: any[];
 }
 
+export interface IMethodsFilter {
+    methods: string;
+    start: number;
+    size: number;
+}
+
+export interface IModifications {
+    [key: string]: any;
+}
+
+export interface IBulkUpdateModel {
+    keys: IClrEntity[];
+    update: IModifications;
+    throwWhenNotFound?: boolean;
+}
+
+export interface IBulkDeleteModel {
+    keys: IClrEntity[];
+    throwWhenNotFound?: boolean;
+}
+
+
 export function append<T>(original: T[], item: T) {
     if (original) {
         return [ ... original, item];
@@ -137,13 +157,15 @@ export default class BaseEntityService extends HttpSession {
 
     public url: string = "/api/entity/";
 
+    protected resultConverter = resolve;
+
     private entityModel: EntityContext;
 
     public async model(): Promise<EntityContext> {
         if (this.entityModel) {
             return this.entityModel;
         }
-        const c = await this.getJson<IEntityModel[]>(`${this.url}/model`);
+        const c = await this.getJson<IEntityModel[]>({ url: `${this.url}/model` });
         this.entityModel = new EntityContext(c);
         return this.entityModel;
     }
@@ -152,16 +174,19 @@ export default class BaseEntityService extends HttpSession {
         return new Query(this, m.name, []);
     }
 
-    public delete(e: IClrEntity): Promise<void> {
-        return this.restApi.delete(e);
+    public delete(body: IClrEntity): Promise<void> {
+        const url = this.url;
+        return this.deleteJson({url, body});
     }
 
-    public insert(e: IClrEntity): Promise<IClrEntity> {
-        return this.restApi.insert(e);
+    public insert(body: IClrEntity): Promise<IClrEntity> {
+        const url = this.url;
+        return this.putJson({url, body});
     }
 
-    public save(e: IClrEntity): Promise<IClrEntity> {
-        return this.restApi.save(e);
+    public save(body: IClrEntity): Promise<IClrEntity> {
+        const url = this.url;
+        return this.postJson({url, body});
     }
 
     public async update(e: IClrEntity, update: IModifications): Promise<any> {
@@ -189,7 +214,9 @@ export default class BaseEntityService extends HttpSession {
             }
             keys.push(key);
         }
-        await this.restApi.bulkSave({ keys, update, throwWhenNotFound });
+        const body = { keys, update, throwWhenNotFound };
+        const url = `${this.url}/bulk`;
+        await this.putJson({url, body});
     }
 
     public async bulkDelete(
@@ -205,6 +232,11 @@ export default class BaseEntityService extends HttpSession {
             }
             keys.push(key);
         }
-        await this.restApi.bulkDelete({ keys, throwWhenNotFound });
+        const url = `${this.url}/bulk`;
+        const body = { keys, throwWhenNotFound };
+        await this.deleteJson({
+            url,
+            body
+        });
     }
 }

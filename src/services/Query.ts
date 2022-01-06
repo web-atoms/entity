@@ -176,7 +176,7 @@ export default class Query<T> {
         return r.items;
     }
 
-    public async toPagedList(
+    public toPagedList(
         {
             start = 0, size = 100, cancelToken, doNotResolve, hideActivityIndicator
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
@@ -185,16 +185,11 @@ export default class Query<T> {
             size,
             start
         };
-        const q = EntityRestService.query(this.ec.url + this.name, filter, cancelToken);
-        const results = await q;
-        if (cancelToken?.cancelled) {
-            throw new Error("cancelled");
-        }
-        if (doNotResolve) {
-            return results as any;
-        }
-        results.items = resolve(results.items);
-        return results as any;
+        const  methods = encodeURIComponent(JSON.stringify(this.methods));
+        return (this.ec as any).getJson(
+            `${this.ec.url}methods/${this.name}?methods=${methods}$start=${start}&size=${size}`,
+            cancelToken,
+            hideActivityIndicator);
     }
 
 }

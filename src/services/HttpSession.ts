@@ -1,3 +1,5 @@
+import CancelToken from "../models/CancelToken";
+
 export type URIWithSearchParams = [string, {[k: string]: any}];
 
 export type StringOrURIWithSearchParams = string | URIWithSearchParams;
@@ -31,12 +33,20 @@ export class TextBody {
     }
 }
 
+export interface IHttpRequest extends RequestInit {
+    url: string;
+    method?: string;
+    headers?: any;
+    body?: any;
+    cancelToken?: CancelToken;
+}
+
 export default class HttpSession {
 
     protected resultConverter = (e) => e;
 
-    protected async fetchJson<T>(url: StringOrURIWithSearchParams, options?: RequestInit): Promise<T> {
-        if (options?.body) {
+    protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
+        if (options.body) {
             const body = options.body;
             if (body instanceof TextBody) {
                 options.body = body.toString();
@@ -44,8 +54,14 @@ export default class HttpSession {
                 options.body = JSON.stringify(options.body);
             }
         }
-        url = typeof url === "string" ? url : combine(url);
-        const response = await fetch(url, options);
+        if (options.cancelToken) {
+            const ab = new AbortController();
+            options.signal = ab.signal;
+            options.cancelToken.registerForCancel(() => {
+                ab.abort();
+            });
+        }
+        const response = await fetch(options.url, options);
         const contentType = response.headers.get("Content-Type")?.toString() as string;
         if (contentType && !contentType.includes("/json")) {
             // throw new Error(`Unable to convert to json\r\n${contentType}\r\n${await response.text()}`);
@@ -54,56 +70,49 @@ export default class HttpSession {
         return this.resultConverter(await response.json());
     }
 
-    protected async getJson<T>(url: StringOrURIWithSearchParams, headers?) {
-        return (await this.fetchJson<T>(url, {
-            method: "GET",
-            headers: {
-                ... headers
-            }
-        }));
+    protected getJson<T>(options: IHttpRequest) {
+        options.method = "GET";
+        return this.fetchJson<T>(options);
     }
 
-    protected async postForm<T>(url: StringOrURIWithSearchParams, data, headers?: any) {
-        return (await this.fetchJson<T>(url, {
-            method: "POST",
-            body: (new TextBody(`formModel=${encodeURIComponent(JSON.stringify(data))}`)) as any,
-            headers: {
-                ... headers,
-                "content-type":  "application/x-www-form-urlencoded"
-            }
-        }));
+    protected postForm<T>(options: IHttpRequest) {
+        options.method = "POST";
+        if (options.body) {
+            options.body = new TextBody(`formModel=${encodeURIComponent(JSON.stringify(options.body))}`);
+        }
+        options.headers ??= {};
+        options.headers["content-type"] = "application/x-www-form-urlencoded";
+        return this.fetchJson<T>(options);
     }
 
-    protected async postJson<T>(url: StringOrURIWithSearchParams, data, headers?: any) {
-        return (await this.fetchJson<T>(url, {
-            method: "POST",
-            body: data,
-            headers: {
-                ... headers,
-                "content-type":  "application/json"
-            }
-        }));
+    protected postJson<T>(options: IHttpRequest) {
+        options.method = "POST";
+        if (options.body) {
+            options.body = JSON.stringify(options.body);
+        }
+        options.headers ??= {};
+        options.headers["content-type"] = "application/json";
+        return this.fetchJson<T>(options);
     }
 
-    protected async deleteJson<T>(url: StringOrURIWithSearchParams, data, headers?: any) {
-        return (await this.fetchJson<T>(url, {
-            method: "DELETE",
-            body: data,
-            headers: {
-                ... headers,
-                "content-type":  "application/json"
-            }
-        }));
+    protected deleteJson<T>(options: IHttpRequest) {
+        options.method = "DELETE";
+        if (options.body) {
+            options.body = JSON.stringify(options.body);
+        }
+        options.headers ??= {};
+        options.headers["content-type"] = "application/json";
+        return this.fetchJson<T>(options);
     }
 
-    protected async putJson<T>(url: StringOrURIWithSearchParams, data, headers?: any) {
-        return (await this.fetchJson<T>(url, {
-            method: "PUT",
-            body: data,
-            headers: {
-                ... headers,
-                "content-type":  "application/json"
-            }
-        }));
+    protected putJson<T>(options: IHttpRequest) {
+        options.method = "PUT";
+        if (options.body) {
+            options.body = JSON.stringify(options.body);
+        }
+        options.headers ??= {};
+        options.headers["content-type"] = "application/json";
+        return this.fetchJson<T>(options);
     }
+
 }
