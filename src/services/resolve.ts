@@ -5,6 +5,7 @@ export const dateFormatISORegEx = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{
 export default function resolve(target) {
     const cache = [];
     const pending = [];
+    const visited = new Map<object, object>();
     function mapIds(t) {
         if (Array.isArray(t)) {
             for (const iterator of t) {
@@ -20,8 +21,14 @@ export default function resolve(target) {
             }
             cache[$id] = t;
         } else {
-            pending.push(t);
-            return;
+            if ($id) {
+                pending.push(t);
+                return;
+            }
+            if (visited.has(t)) {
+                return;
+            }
+            visited.set(t, t);
         }
         for (const key in t) {
             if (Object.prototype.hasOwnProperty.call(t, key)) {
