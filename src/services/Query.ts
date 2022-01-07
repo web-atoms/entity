@@ -181,10 +181,10 @@ export default class Query<T> {
             start = 0, size = 100, cancelToken, hideActivityIndicator
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         const  methods = encodeURIComponent(JSON.stringify(this.methods));
-        return (this.ec as any).getJson(
-            `${this.ec.url}methods/${this.name}?methods=${methods}$start=${start}&size=${size}`,
-            cancelToken,
-            hideActivityIndicator);
+        return (this.ec as any).getJson({
+            url: `${this.ec.url}methods/${this.name}?methods=${methods}$start=${start}&size=${size}`,
+            cancelToken
+        });
     }
 
 }
