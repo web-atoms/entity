@@ -1,7 +1,9 @@
+import { App } from "@web-atoms/core/dist/App";
 import { CancelToken } from "@web-atoms/core/dist/core/types";
+import { Inject } from "@web-atoms/core/dist/di/Inject";
 import IClrEntity from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
-import HttpSession from "./HttpSession";
+import HttpSession, { IHttpRequest } from "./HttpSession";
 import Query from "./Query";
 import resolve from "./resolve";
 
@@ -164,6 +166,9 @@ export default class BaseEntityService extends HttpSession {
 
     private entityModel: EntityContext;
 
+    @Inject
+    private app: App;
+
     public async model(): Promise<EntityContext> {
         if (this.entityModel) {
             return this.entityModel;
@@ -241,5 +246,18 @@ export default class BaseEntityService extends HttpSession {
             url,
             body
         });
+    }
+
+    protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
+        const app = this.app;
+        if (!app) {
+            return super.fetchJson(options);
+        }
+        const disposable = app.createBusyIndicator({ title: options.url });
+        try {
+            return await this.fetchJson(options);
+        } finally {
+            disposable?.dispose();
+        }
     }
 }
