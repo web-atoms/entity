@@ -255,7 +255,7 @@ export default class BaseEntityService extends HttpSession {
         }
         const disposable = app.createBusyIndicator({ title: options.url });
         try {
-            return await this.fetchJson(options);
+            return await super.fetchJson(options);
         } finally {
             disposable?.dispose();
         }
