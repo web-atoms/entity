@@ -47,14 +47,6 @@ export default class HttpSession {
     protected resultConverter = (e) => e;
 
     protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
-        if (options.body) {
-            const body = options.body;
-            if (body instanceof TextBody) {
-                options.body = body.toString();
-            } else {
-                options.body = JSON.stringify(options.body);
-            }
-        }
         if (options.cancelToken) {
             const ab = new AbortController();
             options.signal = ab.signal;
@@ -91,7 +83,7 @@ export default class HttpSession {
         return this.fetchJson<T>(options);
     }
 
-    protected postForm<T>(options: IHttpRequest) {
+    protected postFormModel<T>(options: IHttpRequest) {
         options.method = "POST";
         if (options.body) {
             options.body = new TextBody(`formModel=${encodeURIComponent(JSON.stringify(options.body))}`);
