@@ -87,13 +87,17 @@ ArrayPrototype.count = function(f) {
     return length;
 };
 
-interface IMethod {
-    query: string;
-    parameters: any[];
+export interface IMethod {
+    select?: [string, ... any[]];
+    where?: [string, ... any[]];
+    orderBy?: [string, ... any[]];
+    orderByDescending?: [string, ... any[]];
+    thenBy?: [string, ... any[]];
+    thenByDescending?: [string, ... any[]];
 }
 
 export interface IMethodsFilter {
-    methods: string;
+    methods: IMethod[];
     start: number;
     size: number;
 }

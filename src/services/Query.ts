@@ -1,9 +1,9 @@
 import { CancelToken } from "@web-atoms/core/dist/core/types";
 import IPagedList from "../models/IPagedList";
-import EntityRestService, { IMethodsFilter } from "./EntityRestService";
+import BaseEntityService, {
+    append, convertToLinq, IListParams, IPagedListParams, IQueryMethod } from "./BaseEntityService";
 import resolve from "./resolve";
 import StringHelper from "./StringHelper";
-import BaseEntityService, { IQueryMethod, append, convertToLinq, IListParams, IPagedListParams } from "./BaseEntityService";
 
 export default class Query<T> {
 
@@ -178,13 +178,8 @@ export default class Query<T> {
 
     public toPagedList(
         {
-            start = 0, size = 100, cancelToken, doNotResolve, hideActivityIndicator
+            start = 0, size = 100, cancelToken, hideActivityIndicator
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
-        const filter: IMethodsFilter = {
-            methods: JSON.stringify(this.methods),
-            size,
-            start
-        };
         const  methods = encodeURIComponent(JSON.stringify(this.methods));
         return (this.ec as any).getJson(
             `${this.ec.url}methods/${this.name}?methods=${methods}$start=${start}&size=${size}`,

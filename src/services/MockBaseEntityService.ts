@@ -2,9 +2,8 @@ import { CancelToken } from "@web-atoms/core/dist/core/types";
 import IClrEntity from "../models/IClrEntity";
 import { EntityContext } from "../models/IEntityModel";
 import IPagedList from "../models/IPagedList";
-import BaseEntityService, { IModel, IQueryMethod } from "./BaseEntityService";
+import BaseEntityService, { IBulkDeleteModel, IBulkUpdateModel, IModel, IQueryMethod } from "./BaseEntityService";
 import Query from "./Query";
-import EntityRestService, { IBulkDeleteModel , IBulkUpdateModel, IMethodsFilter} from "./EntityRestService";
 
 const replacer = /(\.[a-z0-9\_])|([a-z0-9\_]\())/ig;
 
@@ -190,8 +189,6 @@ class MockEntityRestService {
 }
 
 export default class MockBaseEntityService extends BaseEntityService {
-
-    public restApi: EntityRestService = new MockEntityRestService(this) as any;
 
     public entityContext: EntityContext;
 

@@ -9,8 +9,7 @@ import { AtomViewModel, Watch } from "@web-atoms/core/dist/view-model/AtomViewMo
 import Load from "@web-atoms/core/dist/view-model/Load";
 import IClrEntity from "../../models/IClrEntity";
 import IPagedList from "../../models/IPagedList";
-import EntityService from "../../services/BaseEntityService";
-import { IQueryFilter } from "../../services/EntityRestService";
+import EntityService, { IMethodsFilter } from "../../services/BaseEntityService";
 
 export default class TableListViewModel extends AtomViewModel {
 
@@ -22,12 +21,10 @@ export default class TableListViewModel extends AtomViewModel {
 
     public tables: any[] = [];
 
-    public filter: IQueryFilter = {
+    public filter = {
         start: 0,
         size: 100,
         filter: null,
-        orderBy: null,
-        parameters: null
     };
 
     public parameters: any;
@@ -54,20 +51,18 @@ export default class TableListViewModel extends AtomViewModel {
 
     @Load( { watch: true , watchDelayMS: 300 })
     public async loadTable(ct?: CancelToken) {
-        const filter = {
-            start: this.filter.start,
-            size: this.filter.size,
-            methods: JSON.stringify( [{
-                where: [this.filter.filter, ... this.filter.parameters],
-            }]),
-            _v: this.version
-        };
-        this.list = await this.entityService.restApi.query(this.table, filter, ct);
+        const { start, size } = this.filter;
+        const filter = this.search;
+        let q = this.entityService.query({ name: this.table});
+        if (filter) {
+            q = q.where({}, () => filter as any);
+        }
+        this.list = await q
+            .toPagedList({ start, size});
     }
 
     public refreshSearch() {
         this.filter.filter = this.search;
-        this.filter.parameters = this.parameters.split(",");
         this.version++;
     }
 

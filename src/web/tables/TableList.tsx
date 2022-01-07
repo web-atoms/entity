@@ -20,8 +20,9 @@ export default class TableList extends AtomControl {
             <AtomComboBox
                 items={Bind.oneWay(() => this.viewModel.tables)}
                 value={Bind.twoWays(() => this.viewModel.table)}/>
-            <input type="search" value={Bind.twoWays(() => this.viewModel.search)}/>
-            <input type="search" value={Bind.twoWays(() => this.viewModel.parameters)}/>
+            <input
+                placeholder={`Valid Lambda Expression e.g. x => x.Key === "a"`}
+                type="search" value={Bind.twoWays(() => this.viewModel.search)}/>
             <button
                 eventClick={Bind.event(() => this.viewModel.refreshSearch())}
                 text="Search"/>
