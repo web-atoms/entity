@@ -7,34 +7,6 @@ import HttpSession, { IHttpRequest } from "./HttpSession";
 import Query from "./Query";
 import resolve from "./resolve";
 
-const replacer = /(===)|(!==)|(\(\{)|(\.(some|map|filter|find)\s*\()|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
-
-export const convertToLinq = (x: string) => {
-    x = x.replace(replacer, (s) => {
-        switch (s) {
-            case "===": return "==";
-            case "!==": return "!=";
-            case "({": return "( new {";
-            case ".some(": return ".Any(";
-            case ".some (": return ".Any(";
-            case ".map(": return ".Select(";
-            case ".map (": return ".Select(";
-            case ".filter(": return ".Where(";
-            case ".filter (": return ".Where(";
-            case ".find(": return ".FirstOrDefault(";
-            case ".find (": return ".FirstOrDefault(";
-            case ".includes(": return ".Contains(";
-            case ".includes (": return ".Contains(";
-        }
-        if (s.endsWith(":")) {
-            return s.substring(0, s.length - 1) + " = ";
-        }
-        return s.toUpperCase();
-    });
-    // reduce white space...
-    return x.replace(/\s+/g, " ");
-};
-
 export interface ICollection<T> extends Array<T> {
     where?(filter: (item: T) => boolean): ICollection<T>;
     any?(filter: (item: T) => boolean): boolean;
@@ -117,13 +89,6 @@ export interface IBulkUpdateModel {
 export interface IBulkDeleteModel {
     keys: IClrEntity[];
     throwWhenNotFound?: boolean;
-}
-
-export function append<T>(original: T[], item: T) {
-    if (original) {
-        return [ ... original, item];
-    }
-    return [item];
 }
 
 export interface IQueryMethod {
