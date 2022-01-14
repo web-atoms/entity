@@ -91,15 +91,14 @@ export interface IBulkDeleteModel {
     throwWhenNotFound?: boolean;
 }
 
-export interface IQueryMethod {
-    select?: [string, ... any[]];
-    where?: [string, ... any[]];
-    orderBy?: [string, ... any[]];
-    orderByDescending?: [string, ... any[]];
-    thenBy?: [string, ... any];
-    thenByDescending?: [string, ... any[]];
-    include?: [string];
-}
+export type IQueryMethod =
+    ["select", string, ... any[]]
+    | ["where", string, ... any[]]
+    | ["orderBy", string, ... any[]]
+    | ["orderByDescending", string, ... any[]]
+    | ["thenBy", string, ... any[]]
+    | ["thenByDescending", string, ... any[]]
+    | ["include", string];
 
 export interface IListParams {
     cancelToken?: CancelToken;
@@ -144,7 +143,7 @@ export default class BaseEntityService extends HttpSession {
     }
 
     public query<T extends IClrEntity>(m: IModel<T>): Query<T> {
-        return new Query(this, m.name, []);
+        return new Query(this, m.name, [], false);
     }
 
     public delete(body: IClrEntity): Promise<void> {

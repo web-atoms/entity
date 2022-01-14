@@ -45,7 +45,8 @@ export default class Query<T> {
     constructor(
         private ec: BaseEntityService,
         private name: string,
-        private methods: IQueryMethod[]
+        private methods: IQueryMethod[],
+        private traceQuery: boolean
     ) {
         if (!methods) {
             throw new Error("Methods cannot be empty");
@@ -67,7 +68,7 @@ export default class Query<T> {
                     pl.push(element);
                 }
             }
-            return new Query(this.ec, this.name, append(this.methods, { where: [text, ...pl] }));
+            return new Query(this.ec, this.name, append(this.methods, ["where", text, ...pl] ), this.traceQuery);
         }
 
         const p = tOrP as any;
@@ -83,7 +84,7 @@ export default class Query<T> {
             }
         }
         text = convertToLinq(text);
-        return new Query(this.ec, this.name, append(this.methods, { where: [text, ...pl] }));
+        return new Query(this.ec, this.name, append(this.methods, ["where", text, ...pl] ), this.traceQuery);
     }
 
     public select<TR>(q: (x: T) => TR): Query<TR>;
@@ -92,7 +93,7 @@ export default class Query<T> {
 
         if (arguments.length === 1) {
             const select = convertToLinq(tOrP.toString());
-            return new Query(this.ec, this.name, append(this.methods, { select: [select] }));
+            return new Query(this.ec, this.name, append(this.methods, ["select", select] ), this.traceQuery);
         }
 
         const pl = [];
@@ -111,7 +112,7 @@ export default class Query<T> {
             }
         }
         text = convertToLinq(text);
-        return new Query(this.ec, this.name, append(this.methods, { select: [text, ...pl] }));
+        return new Query(this.ec, this.name, append(this.methods, ["select", text, ...pl] ), this.traceQuery);
     }
 
     /**
@@ -138,7 +139,7 @@ export default class Query<T> {
         // return new Query(this.ec, this.name, append(this.filter, { query: filters, parameters: params }),
         //     this.orderBys,
         //     this.includeProps);
-        return new Query(this.ec, this.name, append(this.methods, { where: [filters, ...params] }));
+        return new Query(this.ec, this.name, append(this.methods, ["where", filters, ...params]), this.traceQuery);
     }
 
     public selectLinq<TR>(query: TemplateStringsArray, ...args: any[]): Query<TR> {
@@ -158,16 +159,16 @@ export default class Query<T> {
         if (last) {
             filters += last;
         }
-        return new Query(this.ec, this.name, append(this.methods, { select: [filters, ...params] }));
+        return new Query(this.ec, this.name, append(this.methods, ["select", filters, ...params] ), this.traceQuery);
     }
 
     public include<P extends keyof T>(...n: P[]): Query<T> {
         const names = n as any;
         let start = this.methods;
         for (const iterator of n) {
-            start = append(start, { include: [iterator.toString()] });
+            start = append(start, ["include", iterator.toString()]);
         }
-        return new Query(this.ec, this.name, start);
+        return new Query(this.ec, this.name, start, this.traceQuery);
     }
 
     public async firstOrDefault(cancelToken?: CancelToken): Promise<T> {
@@ -180,22 +181,26 @@ export default class Query<T> {
 
     public orderBy(filter: (i: T) => any): Query<T> {
         const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, { orderBy: [text] }));
+        return new Query(this.ec, this.name, append(this.methods, ["orderBy", text]), this.traceQuery);
     }
 
     public orderByDescending(filter: (i: T) => any): Query<T> {
         const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, { orderByDescending: [text] }));
+        return new Query(this.ec, this.name, append(this.methods, ["orderByDescending", text]), this.traceQuery);
     }
 
     public thenBy(filter: (i: T) => any): Query<T> {
         const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, { thenBy: [text] }));
+        return new Query(this.ec, this.name, append(this.methods, ["thenBy", text]), this.traceQuery);
     }
 
     public thenByDescending(filter: (i: T) => any): Query<T> {
         const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, { thenByDescending: [text] }));
+        return new Query(this.ec, this.name, append(this.methods, ["thenByDescending", text]), this.traceQuery);
+    }
+
+    public trace(): Query<T> {
+        return new Query(this.ec, this.name, this.methods, true);
     }
 
     /**
@@ -216,8 +221,9 @@ export default class Query<T> {
             start = 0, size = 100, cancelToken, hideActivityIndicator
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         const  methods = encodeURIComponent(JSON.stringify(this.methods));
+        const trace = this.traceQuery ? "true" : "false";
         return (this.ec as any).getJson({
-            url: `${this.ec.url}methods/${this.name}?methods=${methods}&start=${start}&size=${size}`,
+            url: `${this.ec.url}methods/${this.name}?methods=${methods}&start=${start}&size=${size}&trace=${trace}`,
             cancelToken
         });
     }
