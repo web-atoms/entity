@@ -30,7 +30,7 @@ export const convertToLinq = (x: string) => {
         return s.toUpperCase();
     });
     // reduce white space...
-    return x.replace(/\s+/g, " ");
+    return x.replace(/\s+/g, " ").replace(/CastAs\_[0-9]\./i, "CastAs.");
 };
 
 export function append<T>(original: T[], item: T) {
