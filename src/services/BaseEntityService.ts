@@ -156,7 +156,9 @@ export default class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public save(body: IClrEntity): Promise<IClrEntity> {
+    public save(body: IClrEntity): Promise<IClrEntity>;
+    public save(body: IClrEntity[]): Promise<IClrEntity[]>;
+    public save(body: any): Promise<any> {
         const url = this.url;
         return this.postJson({url, body});
     }
