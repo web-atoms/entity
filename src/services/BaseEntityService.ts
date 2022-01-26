@@ -112,6 +112,11 @@ export interface IListParams {
      * Do not display activity indicator
      */
     hideActivityIndicator?: boolean;
+
+    /**
+     * Response will include cache-control with given seconds as max age
+     */
+    cacheSeconds?: number;
 }
 export interface IPagedListParams extends IListParams {
     start?: number;
