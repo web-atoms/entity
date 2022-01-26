@@ -222,13 +222,21 @@ export default class Query<T> {
             size = 100,
             cancelToken,
             hideActivityIndicator,
+            splitInclude = false,
             cacheSeconds = 0
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         const  methods = encodeURIComponent(JSON.stringify(this.methods));
         const trace = this.traceQuery ? "true" : "false";
+        let url;
+        if (cacheSeconds > 0) {
+            url  = `${this.ec.url}cached/${this.name}/${methods}/${
+                start}/${size}/${splitInclude}/${trace}/${cacheSeconds}`;
+        } else {
+        url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
+            start}&size=${size}&trace=${trace}`;
+        }
         return (this.ec as any).getJson({
-            url: `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
-                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}`,
+            url,
             cancelToken
         });
     }

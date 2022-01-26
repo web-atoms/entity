@@ -117,6 +117,11 @@ export interface IListParams {
      * Response will include cache-control with given seconds as max age
      */
     cacheSeconds?: number;
+
+    /**
+     * Split server side includes
+     */
+    splitInclude?: boolean;
 }
 export interface IPagedListParams extends IListParams {
     start?: number;
