@@ -8,9 +8,12 @@ import Query from "./Query";
 import resolve from "./resolve";
 
 export interface ICollection<T> extends Array<T> {
+    sum?(filter: (item: T) => number): number;
+    avg?(filter: (item: T) => number): number;
     where?(filter: (item: T) => boolean): ICollection<T>;
     any?(filter: (item: T) => boolean): boolean;
     select?<TR>(select: (item: T) => TR): ICollection<TR>;
+    selectMany?<TR>(select: (item: T) => TR): ICollection<TR>;
     firstOrDefault?(filter: (item: T) => boolean): T;
     count?(filter?: (item: T) => boolean): number;
     toArray?(): ICollection<T>;
@@ -26,6 +29,23 @@ ArrayPrototype.where = ArrayPrototype.filter;
 ArrayPrototype.any = ArrayPrototype.some;
 ArrayPrototype.select = ArrayPrototype.map;
 ArrayPrototype.firstOrDefault = ArrayPrototype.find;
+ArrayPrototype.sum = function(f) {
+    let n = 0;
+    for (const iterator of this) {
+        n += f(iterator) ?? 0;
+    }
+    return n;
+};
+ArrayPrototype.avg = function(f) {
+    if (this.length === 0) {
+        return 0;
+    }
+    let n = 0;
+    for (const iterator of this) {
+        n += f(iterator) ?? 0;
+    }
+    return n / this.length;
+};
 ArrayPrototype.orderBy = function(f) {
     return this.sort((a, b) => {
         const ak = f(a);
