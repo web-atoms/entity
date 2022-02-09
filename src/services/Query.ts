@@ -73,7 +73,6 @@ export default class Query<T> {
 
         const p = tOrP as any;
         text = q(p).toString();
-        const x = StringHelper.findParameter(text);
         const pfn = StringHelper.findParameter(q.toString()).trim();
         for (const key in p) {
             if (Object.prototype.hasOwnProperty.call(p, key)) {
