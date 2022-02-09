@@ -4,9 +4,12 @@ export default class StringHelper {
         let text: string = f.toString();
         let i = text.indexOf("=>");
         if (i !== -1) {
-            return text.substring(0, i);
+            text = text.substring(0, i);
         }
         i = text.indexOf("(");
+        if (i === -1) {
+            return text;
+        }
         text = text.substring(i + 1);
         i = text.indexOf(")");
         return text.substring(0, i);
