@@ -45,7 +45,9 @@ export interface IIncludedQuery<T, TR> extends Required<Query<T>> {
 }
 
 export interface IIncludedArrayQuery<T, TR, TRA extends TR[]> extends Required<Query<T>> {
-    thenInclude<TP>(path: (x: TR) => TP);
+    thenInclude<TP>(q: (x: T) => TP[]): IIncludedArrayQuery<T, TP, TP[]>;
+    thenInclude<TP>(q: (x: T) => TP): IIncludedQuery<T, TP>;
+
 }
 
 export default class Query<T> {
