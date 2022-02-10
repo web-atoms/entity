@@ -169,7 +169,7 @@ export default class Query<T> {
         return new Query(this.ec, this.name, append(this.methods, ["select", filters, ...params] ), this.traceQuery);
     }
 
-    public include<TR, TRA extends TR[]>(q: (x: T) => TRA): IIncludedArrayQuery<T, TR, TRA>;
+    public include<TR>(q: (x: T) => TR[]): IIncludedArrayQuery<T, TR, TR[]>;
     public include<TR>(q: (x: T) => TR): IIncludedQuery<T, TR>;
     public include<TR>(... q: string[]): Query<T>;
     public include<TR>(tOrP: ((x: T) => any) | string, ... q: string[]): IIncludedQuery<T, TR> | Query<T> {
