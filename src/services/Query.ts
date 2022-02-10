@@ -33,11 +33,19 @@ export const convertToLinq = (x: string) => {
     return x.replace(/\s+/g, " ").replace(/CastAs\_[0-9]\.default\./i, "CastAs.");
 };
 
-export function append<T>(original: T[], item: T) {
+export function append<T>(original: T[], ... item: T[]) {
     if (original) {
-        return [ ... original, item];
+        return [ ... original, ... item];
     }
-    return [item];
+    return [...item];
+}
+
+export interface IIncludedQuery<T, TR> extends Required<Query<T>> {
+    thenInclude<TP>(path: (x: TR) => TP);
+}
+
+export interface IIncludedArrayQuery<T, TR, TRA extends TR[]> extends Required<Query<T>> {
+    thenInclude<TP>(path: (x: TR) => TP);
 }
 
 export default class Query<T> {
@@ -161,13 +169,19 @@ export default class Query<T> {
         return new Query(this.ec, this.name, append(this.methods, ["select", filters, ...params] ), this.traceQuery);
     }
 
-    public include<P extends keyof T>(...n: P[]): Query<T> {
-        const names = n as any;
-        let start = this.methods;
-        for (const iterator of n) {
-            start = append(start, ["include", iterator.toString()]);
+    public include<TR, TRA extends TR[]>(q: (x: T) => TRA): IIncludedArrayQuery<T, TR, TRA>;
+    public include<TR>(q: (x: T) => TR): IIncludedQuery<T, TR>;
+    public include<TR>(... q: string[]): Query<T>;
+    public include<TR>(tOrP: ((x: T) => any) | string, ... q: string[]): IIncludedQuery<T, TR> | Query<T> {
+        if (typeof tOrP === "string") {
+            return new Query(this.ec, this.name, append(
+                this.methods,
+                ["include", tOrP],
+                ... q.map((s) => ["include", s] as IQueryMethod)
+                ), this.traceQuery) as any;
         }
-        return new Query(this.ec, this.name, start, this.traceQuery);
+        const select = convertToLinq(tOrP.toString());
+        return new Query(this.ec, this.name, append(this.methods, ["include", select] ), this.traceQuery) as any;
     }
 
     public async firstOrDefault(cancelToken?: CancelToken): Promise<T> {
@@ -238,6 +252,11 @@ export default class Query<T> {
             url,
             cancelToken
         });
+    }
+
+    protected thenInclude(a): any {
+        const select = convertToLinq(a.toString());
+        return new Query(this.ec, this.name, append(this.methods, ["thenInclude", select] ), this.traceQuery);
     }
 
 }

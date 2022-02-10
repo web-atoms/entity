@@ -118,7 +118,8 @@ export type IQueryMethod =
     | ["orderByDescending", string, ... any[]]
     | ["thenBy", string, ... any[]]
     | ["thenByDescending", string, ... any[]]
-    | ["include", string];
+    | ["include", string]
+    | ["thenInclude", string];
 
 export interface IListParams {
     cancelToken?: CancelToken;
