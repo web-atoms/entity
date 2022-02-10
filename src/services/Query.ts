@@ -41,13 +41,12 @@ export function append<T>(original: T[], ... item: T[]) {
 }
 
 export interface IIncludedQuery<T, TR> extends Required<Query<T>> {
-    thenInclude<TP>(path: (x: TR) => TP);
+    thenInclude<TP>(path: (x: TR) => TP): IIncludedQuery<T, TP>;
 }
 
 export interface IIncludedArrayQuery<T, TR, TRA extends TR[]> extends Required<Query<T>> {
-    thenInclude<TP>(q: (x: T) => TP[]): IIncludedArrayQuery<T, TP, TP[]>;
-    thenInclude<TP>(q: (x: T) => TP): IIncludedQuery<T, TP>;
-
+    thenInclude<TP>(q: (x: TR) => TP[]): IIncludedArrayQuery<T, TP, TP[]>;
+    thenInclude<TP>(q: (x: TR) => TP): IIncludedQuery<T, TP>;
 }
 
 export default class Query<T> {
