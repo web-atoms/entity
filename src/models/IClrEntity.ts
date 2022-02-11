@@ -14,5 +14,7 @@ export interface INavigationProperties {
 export default interface IClrEntity {
     $type: string;
     $navigations?: INavigationProperties;
+    /** @deprecated The field may not exist in the model */
+    /** @warn The field may not exist in the model */
     [key: string]: any;
 }
