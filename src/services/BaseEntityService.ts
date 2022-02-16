@@ -1,43 +1,19 @@
+import { App } from "@web-atoms/core/dist/App";
 import { CancelToken } from "@web-atoms/core/dist/core/types";
-import DISingleton from "@web-atoms/core/dist/di/DISingleton";
 import { Inject } from "@web-atoms/core/dist/di/Inject";
 import IClrEntity from "../models/IClrEntity";
-import { EntityContext } from "../models/IEntityModel";
-import IPagedList from "../models/IPagedList";
-import EntityRestService, { IMethodsFilter, IModifications, IQueryFilter } from "./EntityRestService";
-
-const replacer = /(===)|(!==)|(\(\{)|(\.(some|map|filter|find)\s*\()|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
-
-const convertToLinq = (x: string) => {
-    x = x.replace(replacer, (s) => {
-        switch (s) {
-            case "===": return "==";
-            case "!==": return "!=";
-            case "({": return "( new {";
-            case ".some(": return ".Any(";
-            case ".some (": return ".Any(";
-            case ".map(": return ".Select(";
-            case ".map (": return ".Select(";
-            case ".filter(": return ".Where(";
-            case ".filter (": return ".Where(";
-            case ".find(": return ".FirstOrDefault(";
-            case ".find (": return ".FirstOrDefault(";
-            case ".includes(": return ".Contains(";
-            case ".includes (": return ".Contains(";
-        }
-        if (s.endsWith(":")) {
-            return s.substring(0, s.length - 1) + " = ";
-        }
-        return s.toUpperCase();
-    });
-    // reduce white space...
-    return x.replace(/\s+/g, " ");
-};
+import IEntityModel, { EntityContext } from "../models/IEntityModel";
+import HttpSession, { IHttpRequest } from "./HttpSession";
+import Query from "./Query";
+import resolve from "./resolve";
 
 export interface ICollection<T> extends Array<T> {
+    sum?(filter: (item: T) => number): number;
+    avg?(filter: (item: T) => number): number;
     where?(filter: (item: T) => boolean): ICollection<T>;
     any?(filter: (item: T) => boolean): boolean;
     select?<TR>(select: (item: T) => TR): ICollection<TR>;
+    selectMany?<TR>(select: (item: T) => TR): ICollection<TR>;
     firstOrDefault?(filter: (item: T) => boolean): T;
     count?(filter?: (item: T) => boolean): number;
     toArray?(): ICollection<T>;
@@ -53,6 +29,23 @@ ArrayPrototype.where = ArrayPrototype.filter;
 ArrayPrototype.any = ArrayPrototype.some;
 ArrayPrototype.select = ArrayPrototype.map;
 ArrayPrototype.firstOrDefault = ArrayPrototype.find;
+ArrayPrototype.sum = function(f) {
+    let n = 0;
+    for (const iterator of this) {
+        n += f(iterator) ?? 0;
+    }
+    return n;
+};
+ArrayPrototype.avg = function(f) {
+    if (this.length === 0) {
+        return 0;
+    }
+    let n = 0;
+    for (const iterator of this) {
+        n += f(iterator) ?? 0;
+    }
+    return n / this.length;
+};
 ArrayPrototype.orderBy = function(f) {
     return this.sort((a, b) => {
         const ak = f(a);
@@ -88,305 +81,45 @@ ArrayPrototype.count = function(f) {
     return length;
 };
 
-interface IMethod {
-    query: string;
-    parameters: any[];
-}
-
-function append<T>(original: T[], item: T) {
-    if (original) {
-        return [ ... original, item];
-    }
-    return [item];
-}
-
-class StringHelper {
-
-    public static findParameter(f: any): string {
-        let text: string = f.toString();
-        let i = text.indexOf("(");
-        text = text.substring(i + 1);
-        i = text.indexOf(")");
-        return text.substring(0, i);
-    }
-
-    public static contains(left: string, right: string): boolean {
-    if (!left) {
-            return !right;
-        }
-    return left.toLowerCase().includes(right.toLowerCase());
-    }
-
-}
-
-function resolve(target) {
-    const cache = [];
-    const pending = [];
-    function mapIds(t) {
-        if (Array.isArray(t)) {
-            for (const iterator of t) {
-                mapIds(iterator);
-            }
-            return;
-        }
-        const { $id, $type } = t;
-        if ($type) {
-            if (cache[$id]) {
-                // we have read this...
-                return;
-            }
-            cache[$id] = t;
-        } else {
-            pending.push(t);
-            return;
-        }
-        for (const key in t) {
-            if (Object.prototype.hasOwnProperty.call(t, key)) {
-                const element = t[key];
-                if (element !== null && typeof element === "object") {
-                    mapIds(element);
-                }
-            }
-        }
-    }
-    if (target === null) {
-        return;
-    }
-    if (typeof target === "object") {
-        mapIds(target);
-        for (const iterator of pending) {
-            const existing = cache[iterator.$id];
-            if (!existing) {
-                continue;
-            }
-            for (const key in existing) {
-                if (Object.prototype.hasOwnProperty.call(existing, key)) {
-                    const element = existing[key];
-                    iterator[key] = element;
-                }
-            }
-        }
-    }
-    return target;
-}
-
-export interface IQueryMethod {
+export interface IMethod {
     select?: [string, ... any[]];
     where?: [string, ... any[]];
     orderBy?: [string, ... any[]];
     orderByDescending?: [string, ... any[]];
-    thenBy?: [string, ... any];
+    thenBy?: [string, ... any[]];
     thenByDescending?: [string, ... any[]];
-    include?: [string];
 }
 
-export class Query<T> {
-
-    constructor(
-        private ec: BaseEntityService,
-        private name: string,
-        private methods: IQueryMethod[]
-        ) {
-        if (!methods) {
-            throw new Error("Methods cannot be empty");
-        }
-    }
-
-    public where(p: Omit<T, "$type">): Query<T>;
-    public where<TP>(p: TP, q: (p: TP) => (x: T) => any): Query<T>;
-    public where<TP>(tOrP: TP | T, q?: (p: TP) => (x: T) => any): Query<T> {
-
-        const pl = [];
-        let i = 0;
-        let text: string = "x => ";
-        if (arguments.length === 1) {
-            for (const key in tOrP as any) {
-                if (Object.prototype.hasOwnProperty.call(tOrP, key)) {
-                    const element = tOrP[key];
-                    text += `${i ? " && " : ""}x.${key} == @${i}`;
-                    pl.push(element);
-                }
-            }
-            return new Query(this.ec, this.name, append(this.methods, { where: [text, ... pl]}));
-        }
-
-        const p = tOrP as any;
-        text = q(p).toString();
-        const x = StringHelper.findParameter(text);
-        const pfn = StringHelper.findParameter(q.toString()).trim();
-        for (const key in p) {
-            if (Object.prototype.hasOwnProperty.call(p, key)) {
-                const element = p[key];
-                const pn = `@${i++}`;
-                text = text.split(`${pfn}.${key}`).join(pn);
-                pl.push(element);
-            }
-        }
-        text = convertToLinq(text);
-        return new Query(this.ec, this.name, append(this.methods, { where: [text, ... pl]}));
-    }
-
-    public select<TR>(q: (x: T) => TR): Query<TR>;
-    public select<TP, TR>(tp: TP,  q: (p: TP) => (x: T) => TR): Query<TR>;
-    public select<TP, TR>(tOrP: TP | ((x: T) => TR), q?: (p: TP) => (x: T) => TR): Query<TR> {
-
-        if (arguments.length === 1) {
-            const select = convertToLinq(tOrP.toString());
-            return new Query(this.ec, this.name, append(this.methods, { select: [select]}));
-        }
-
-        const pl = [];
-        let i = 0;
-        let text: string = "x => ";
-        const p = tOrP as any;
-        text = q(p).toString();
-        const x = StringHelper.findParameter(text);
-        const pfn = StringHelper.findParameter(q.toString()).trim();
-        for (const key in p) {
-            if (Object.prototype.hasOwnProperty.call(p, key)) {
-                const element = p[key];
-                const pn = `@${i++}`;
-                text = text.split(`${pfn}.${key}`).join(pn);
-                pl.push(element);
-            }
-        }
-        text = convertToLinq(text);
-        return new Query(this.ec, this.name, append(this.methods, { select: [text, ... pl]}));
-    }
-
-    /**
-     * @param args any[]
-     * @returns Query<T>
-     */
-    public whereLinq(query: TemplateStringsArray, ... args: any[]): Query<T> {
-        let filters = "";
-        const params = [];
-        for (let index = 0; index < args.length; index++) {
-            const element = args[index];
-            const raw = query.raw[index];
-            if (raw) {
-                filters += raw;
-            }
-            const pi = `@${index}`;
-            filters += pi;
-            params.push(element);
-        }
-        const last = query.raw[args.length];
-        if (last) {
-            filters += last;
-        }
-        // return new Query(this.ec, this.name, append(this.filter, { query: filters, parameters: params }),
-        //     this.orderBys,
-        //     this.includeProps);
-        return new Query(this.ec, this.name, append(this.methods, { where: [filters, ... params]}));
-    }
-
-    public selectLinq<TR>(query: TemplateStringsArray, ... args: any[]): Query<TR> {
-        let filters = "";
-        const params = [];
-        for (let index = 0; index < args.length; index++) {
-            const element = args[index];
-            const raw = query.raw[index];
-            if (raw) {
-                filters += raw;
-            }
-            const pi = `@${index}`;
-            filters += pi;
-            params.push(element);
-        }
-        const last = query.raw[args.length];
-        if (last) {
-            filters += last;
-        }
-        return new Query(this.ec, this.name, append(this.methods, { select: [filters, ... params]}));
-    }
-
-    public include<P extends keyof T>(... n: P[]): Query<T> {
-        const names = n as any;
-        let start = this.methods;
-        for (const iterator of n) {
-            start = append(start, { include: [iterator.toString()] });
-        }
-        return new Query(this.ec, this.name, start);
-    }
-
-    public async firstOrDefault(cancelToken?: CancelToken): Promise<T> {
-        const list = await this.toPagedList({
-            size: 1,
-            cancelToken
-        });
-        return list.items[0];
-    }
-
-    public orderBy(filter: (i: T) => any): Query<T> {
-        const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, { orderBy: [text]}));
-    }
-
-    public orderByDescending(filter: (i: T) => any): Query<T> {
-        const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, { orderByDescending: [text]}));
-    }
-
-    public thenBy(filter: (i: T) => any): Query<T> {
-        const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, { thenBy: [text]}));
-    }
-
-    public thenByDescending(filter: (i: T) => any): Query<T> {
-        const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, { thenByDescending: [text]}));
-    }
-
-    /**
-     * Warning, will return all the items from the query, please use `toPagedList`
-     * for better performance
-     * @param cancelToken Cancel Token to cancel the query
-     * @returns Promise<T[]>
-     */
-    public async toArray({
-        cancelToken,
-        doNotResolve,
-        hideActivityIndicator
-    }: IListParams = {}): Promise<T[]> {
-        const r = await this.toPagedList({ size: -1, cancelToken, doNotResolve, hideActivityIndicator });
-        return r.items;
-    }
-
-    public async toPagedList(
-        {
-            start = 0,
-            size = 100,
-            cancelToken,
-            doNotResolve,
-            hideActivityIndicator
-        }: IPagedListParams = {}): Promise<IPagedList<T>> {
-        const filter: IMethodsFilter = {
-            methods: JSON.stringify(this.methods),
-            size,
-            start
-        };
-        let showProgress = true;
-        if (hideActivityIndicator) {
-            showProgress = this.ec.restApi.showProgress;
-            this.ec.restApi.showProgress = false;
-        }
-        const q = this.ec.restApi.query(this.name, filter, cancelToken);
-        if (hideActivityIndicator) {
-            this.ec.restApi.showProgress = showProgress;
-        }
-        const results = await q;
-        if (cancelToken?.cancelled) {
-            throw new Error("cancelled");
-        }
-        if (doNotResolve) {
-            return results as any;
-        }
-        results.items = resolve(results.items);
-        return results as any;
-    }
-
+export interface IMethodsFilter {
+    methods: IMethod[];
+    start: number;
+    size: number;
 }
+
+export interface IModifications {
+    [key: string]: any;
+}
+
+export interface IBulkUpdateModel {
+    keys: IClrEntity[];
+    update: IModifications;
+    throwWhenNotFound?: boolean;
+}
+
+export interface IBulkDeleteModel {
+    keys: IClrEntity[];
+    throwWhenNotFound?: boolean;
+}
+
+export type IQueryMethod =
+    ["select", string, ... any[]]
+    | ["where", string, ... any[]]
+    | ["orderBy", string, ... any[]]
+    | ["orderByDescending", string, ... any[]]
+    | ["thenBy", string, ... any[]]
+    | ["thenByDescending", string, ... any[]]
+    | ["include", string]
+    | ["thenInclude", string];
 
 export interface IListParams {
     cancelToken?: CancelToken;
@@ -400,6 +133,16 @@ export interface IListParams {
      * Do not display activity indicator
      */
     hideActivityIndicator?: boolean;
+
+    /**
+     * Response will include cache-control with given seconds as max age
+     */
+    cacheSeconds?: number;
+
+    /**
+     * Split server side includes
+     */
+    splitInclude?: boolean;
 }
 export interface IPagedListParams extends IListParams {
     start?: number;
@@ -410,57 +153,45 @@ export interface IModel<T> {
     name: string;
 }
 
-export default class BaseEntityService {
+export default class BaseEntityService extends HttpSession {
 
-    @Inject
-    public restApi: EntityRestService;
+    public url: string = "/api/entity/";
+
+    protected resultConverter = resolve;
 
     private entityModel: EntityContext;
+
+    @Inject
+    private app: App;
 
     public async model(): Promise<EntityContext> {
         if (this.entityModel) {
             return this.entityModel;
         }
-        const c = await this.restApi.model();
+        const c = await this.getJson<IEntityModel[]>({ url: `${this.url}/model` });
         this.entityModel = new EntityContext(c);
         return this.entityModel;
     }
 
-    // public async get(name: string, query: IQueryFilter, ct?: CancelToken): Promise<IClrEntity> {
-    //     const r = await this.entityQuery(name, query, ct);
-    //     return r.items[0];
-    // }
-
     public query<T extends IClrEntity>(m: IModel<T>): Query<T> {
-        return new Query(this, m.name, []);
+        return new Query(this, m.name, [], false);
     }
 
-    // public entityQuery<T extends IClrEntity>(
-    //     name: string,
-    //     query: IQueryFilter,
-    //     ct?: CancelToken): Promise<IPagedList<T>> {
-    //     if (typeof query.keys === "object") {
-    //         query.keys = JSON.stringify(query.keys) as any;
-    //     }
-    //     if (typeof query.parameters === "object") {
-    //         query.parameters = JSON.stringify(query.parameters) as any;
-    //     }
-    //     if (typeof(query.include) === "object") {
-    //         query.include = JSON.stringify(query.include) as any;
-    //     }
-    //     return this.restApi.query(name, query, ct) as any;
-    // }
-
-    public delete(e: IClrEntity): Promise<void> {
-        return this.restApi.delete(e);
+    public delete(body: IClrEntity): Promise<void> {
+        const url = this.url;
+        return this.deleteJson({url, body});
     }
 
-    public insert(e: IClrEntity): Promise<IClrEntity> {
-        return this.restApi.insert(e);
+    public insert(body: IClrEntity): Promise<IClrEntity> {
+        const url = this.url;
+        return this.putJson({url, body});
     }
 
-    public save(e: IClrEntity): Promise<IClrEntity> {
-        return this.restApi.save(e);
+    public save(body: IClrEntity): Promise<IClrEntity>;
+    public save(body: IClrEntity[]): Promise<IClrEntity[]>;
+    public save(body: any): Promise<any> {
+        const url = this.url;
+        return this.postJson({url, body});
     }
 
     public async update(e: IClrEntity, update: IModifications): Promise<any> {
@@ -488,7 +219,9 @@ export default class BaseEntityService {
             }
             keys.push(key);
         }
-        await this.restApi.bulkSave({ keys, update, throwWhenNotFound });
+        const body = { keys, update, throwWhenNotFound };
+        const url = `${this.url}/bulk`;
+        await this.putJson({url, body});
     }
 
     public async bulkDelete(
@@ -504,6 +237,24 @@ export default class BaseEntityService {
             }
             keys.push(key);
         }
-        await this.restApi.bulkDelete({ keys, throwWhenNotFound });
+        const url = `${this.url}/bulk`;
+        const body = { keys, throwWhenNotFound };
+        await this.deleteJson({
+            url,
+            body
+        });
+    }
+
+    protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
+        const app = this.app;
+        if (!app) {
+            return super.fetchJson(options);
+        }
+        const disposable = app.createBusyIndicator({ title: options.url });
+        try {
+            return await super.fetchJson(options);
+        } finally {
+            disposable?.dispose();
+        }
     }
 }
