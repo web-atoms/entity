@@ -1,6 +1,7 @@
 import { App } from "@web-atoms/core/dist/App";
 import { CancelToken } from "@web-atoms/core/dist/core/types";
 import { Inject } from "@web-atoms/core/dist/di/Inject";
+import { Cloner } from "../models/Cloner";
 import IClrEntity from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
 import HttpSession, { IHttpRequest } from "./HttpSession";
@@ -13,7 +14,7 @@ export interface ICollection<T> extends Array<T> {
     where?(filter: (item: T) => boolean): ICollection<T>;
     any?(filter: (item: T) => boolean): boolean;
     select?<TR>(select: (item: T) => TR): ICollection<TR>;
-    selectMany?<TR>(select: (item: T) => TR): ICollection<TR>;
+    selectMany?<TR>(select: (item: T) => TR[]): ICollection<TR>;
     firstOrDefault?(filter: (item: T) => boolean): T;
     count?(filter?: (item: T) => boolean): number;
     toArray?(): ICollection<T>;
@@ -28,6 +29,13 @@ const ArrayPrototype = Array.prototype as any;
 ArrayPrototype.where = ArrayPrototype.filter;
 ArrayPrototype.any = ArrayPrototype.some;
 ArrayPrototype.select = ArrayPrototype.map;
+ArrayPrototype.selectMany = function (x) {
+    const r = [];
+    for (const iterator of this) {
+        r.push(... x(iterator));
+    }
+    return r;
+};
 ArrayPrototype.firstOrDefault = ArrayPrototype.find;
 ArrayPrototype.sum = function(f) {
     let n = 0;
@@ -163,6 +171,10 @@ export default class BaseEntityService extends HttpSession {
 
     @Inject
     private app: App;
+
+    public cloner<T>(item: T): Cloner<T> {
+        return new Cloner(item);
+    }
 
     public async model(): Promise<EntityContext> {
         if (this.entityModel) {
