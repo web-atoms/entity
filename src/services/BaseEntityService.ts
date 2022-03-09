@@ -1,6 +1,7 @@
 import { App } from "@web-atoms/core/dist/App";
 import { CancelToken } from "@web-atoms/core/dist/core/types";
 import { Inject } from "@web-atoms/core/dist/di/Inject";
+import { Cloner } from "../models/Cloner";
 import IClrEntity from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
 import HttpSession, { IHttpRequest } from "./HttpSession";
@@ -163,6 +164,10 @@ export default class BaseEntityService extends HttpSession {
 
     @Inject
     private app: App;
+
+    public cloner<T>(item: T): Cloner<T> {
+        return new Cloner(item);
+    }
 
     public async model(): Promise<EntityContext> {
         if (this.entityModel) {
