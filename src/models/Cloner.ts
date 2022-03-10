@@ -22,6 +22,9 @@ export class Cloner<T> {
                         if (element === null){
                             dest[key] = null;
                         }
+                        if (element instanceof Date) {
+                            dest[key] = element;
+                        }
                         break;
                 }
             }
