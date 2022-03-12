@@ -224,9 +224,9 @@ export default class Query<T> {
      * @returns Promise<T[]>
      */
     public async toArray({
-        cancelToken, doNotResolve, hideActivityIndicator
+        cancelToken, doNotResolve, hideActivityIndicator, cacheSeconds
     }: IListParams = {}): Promise<T[]> {
-        const r = await this.toPagedList({ size: -1, cancelToken, doNotResolve, hideActivityIndicator });
+        const r = await this.toPagedList({ size: -1, cacheSeconds, cancelToken, doNotResolve, hideActivityIndicator });
         return r.items;
     }
 
