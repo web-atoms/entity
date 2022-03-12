@@ -1,6 +1,6 @@
 {
   "name": "@web-atoms/entity",
-  "version": "2.2.27",
+  "version": "2.2.28",
   "description": "TypeScript classes and controls to edit entities exposed with Entity Access Control",
   "main": "index.js",
   "scripts": {
