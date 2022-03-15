@@ -15,7 +15,7 @@ export interface ICollection<T> extends Array<T> {
     any?(filter: (item: T) => boolean): boolean;
     select?<TR>(select: (item: T) => TR): ICollection<TR>;
     selectMany?<TR>(select: (item: T) => TR[]): ICollection<TR>;
-    firstOrDefault?(filter: (item: T) => boolean): T;
+    firstOrDefault?(filter?: (item: T) => boolean): T;
     count?(filter?: (item: T) => boolean): number;
     toArray?(): ICollection<T>;
     toList?(): ICollection<T>;
@@ -36,7 +36,12 @@ ArrayPrototype.selectMany = function (x) {
     }
     return r;
 };
-ArrayPrototype.firstOrDefault = ArrayPrototype.find;
+ArrayPrototype.firstOrDefault = function (f) {
+    if (f) {
+        return ArrayPrototype.find.apply(this, arguments);
+    }
+    return this[0];
+}
 ArrayPrototype.sum = function(f) {
     let n = 0;
     for (const iterator of this) {
