@@ -185,11 +185,11 @@ export default class Query<T> {
         return new Query(this.ec, this.name, append(this.methods, ["include", select] ), this.traceQuery) as any;
     }
 
-    public async firstOrDefault(cancelToken?: CancelToken): Promise<T> {
-        const list = await this.toPagedList({
-            size: 1,
-            cancelToken
-        });
+    public async firstOrDefault(p?: IListParams): Promise<T> {
+        let lp = p as IPagedListParams;
+        lp.size = 1;
+        lp.start = 0;
+        const list = await this.toPagedList(lp);
         return list.items[0];
     }
 
