@@ -29,19 +29,19 @@ const ArrayPrototype = Array.prototype as any;
 ArrayPrototype.where = ArrayPrototype.filter;
 ArrayPrototype.any = ArrayPrototype.some;
 ArrayPrototype.select = ArrayPrototype.map;
-ArrayPrototype.selectMany = function (x) {
+ArrayPrototype.selectMany = function(x) {
     const r = [];
     for (const iterator of this) {
         r.push(... x(iterator));
     }
     return r;
 };
-ArrayPrototype.firstOrDefault = function (f) {
+ArrayPrototype.firstOrDefault = function(f) {
     if (f) {
         return ArrayPrototype.find.apply(this, arguments);
     }
     return this[0];
-}
+};
 ArrayPrototype.sum = function(f) {
     let n = 0;
     for (const iterator of this) {
@@ -204,8 +204,8 @@ export default class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public save(body: IClrEntity): Promise<IClrEntity>;
-    public save(body: IClrEntity[]): Promise<IClrEntity[]>;
+    public save<T extends IClrEntity>(body: T): Promise<T>;
+    public save<T extends IClrEntity>(body: T[]): Promise<T[]>;
     public save(body: any): Promise<any> {
         const url = this.url;
         return this.postJson({url, body});
