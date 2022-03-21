@@ -1,5 +1,16 @@
 import { ICollection } from "../services/BaseEntityService";
 
+const getKey = (target, value) => {
+    for (const key in target) {
+        if (Object.prototype.hasOwnProperty.call(target, key)) {
+            const element = target[key];
+            if (element === value) {
+                return key;
+            }
+        }
+    }
+};
+
 /* eslint-disable @typescript-eslint/unified-signatures */
 export class Cloner<T> {
 
@@ -46,19 +57,15 @@ export class Cloner<T> {
     public include<TProperty>(property: any): PropertyCloner<T, TProperty> {
         let p = property(this.item);
         const original = p;
+        const keyName = getKey(this.item, original);
+        const clone = this.value[keyName];
+        if (clone !== void 0) {
+            return new PropertyCloner(this.value, this.item, original, clone);
+        }
         if (Array.isArray(p)) {
             p = p.map((i) => Cloner.copyProperties(i));
         } else {
             p = Cloner.copyProperties(p);
-        }
-        for (const key in this.item) {
-            if (Object.prototype.hasOwnProperty.call(this.item, key)) {
-                const element = this.item[key] as any;
-                if (element === original) {
-                    this.value[key] = p;
-                    break;
-                }
-            }
         }
         return new PropertyCloner(this.value, this.item, original, p);
     }
@@ -77,19 +84,15 @@ export class PropertyCloner<T, TPrevious> extends Cloner<T> {
     public thenInclude<TProperty>(property: any): PropertyCloner<T, TProperty> {
         let p = property(this.original);
         const o = p;
+        const keyName = getKey(this.item, o);
+        const clone = this.property[keyName];
+        if (clone !== void 0) {
+            return new PropertyCloner(this.value, this.item, o, clone);
+        }
         if (Array.isArray(p)) {
             p = p.map((i) => Cloner.copyProperties(i));
         } else {
             p = Cloner.copyProperties(p);
-        }
-        for (const key in this.original) {
-            if (Object.prototype.hasOwnProperty.call(this.original, key)) {
-                const element = this.original[key] as any;
-                if (element === o) {
-                    this.property[key] = p;
-                    break;
-                }
-            }
         }
         return new PropertyCloner(this.value, this.item, o, p);
     }
