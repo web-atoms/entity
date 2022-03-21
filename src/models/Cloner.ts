@@ -55,6 +55,9 @@ export class Cloner<T> {
     public include<TProperty>(property: (item: T) => TProperty[]): PropertyCloner<T, TProperty>;
     public include<TProperty>(property: (item: T) => TProperty): PropertyCloner<T, TProperty>;
     public include<TProperty>(property: any): PropertyCloner<T, TProperty> {
+        if (!this.item) {
+            return new PropertyCloner(this.value, this.item, undefined, undefined);
+        }
         let p = property(this.item);
         const original = p;
         const keyName = getKey(this.item, original);
@@ -83,6 +86,9 @@ export class PropertyCloner<T, TPrevious> extends Cloner<T> {
     public thenInclude<TProperty>(property: (item: TPrevious) => TProperty[]): PropertyCloner<T, TProperty>;
     public thenInclude<TProperty>(property: (item: TPrevious) => TProperty): PropertyCloner<T, TProperty>;
     public thenInclude<TProperty>(property: any): PropertyCloner<T, TProperty> {
+        if (!this.original) {
+            return new PropertyCloner(this.value, this.item, undefined, undefined);
+        }
         let p = property(this.original);
         const o = p;
         const keyName = getKey(this.property, o);
