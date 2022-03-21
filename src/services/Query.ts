@@ -244,7 +244,7 @@ export default class Query<T> {
         const trace = this.traceQuery ? "true" : "false";
         let url;
         if (cacheSeconds > 0) {
-            url  = `${this.ec.url}cached64/${this.name}/${btoa(methods)}/${
+            url  = `${this.ec.url}cached64/${this.name}/${encodeURIComponent(btoa(methods))}/${
                 start}/${size}/${splitInclude}/${trace}/${cacheSeconds}`;
         } else {
         url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
