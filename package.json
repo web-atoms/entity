@@ -20,6 +20,9 @@
     "@web-atoms/web-controls": "^2.1.1",
     "reflect-metadata": "^0.1.13"
   },
+  "devDependencies": {
+    "@web-atoms/unit-test": "^1.0.8"
+  },
   "bugs": {
     "url": "https://github.com/web-atoms/entity/issues"
   },

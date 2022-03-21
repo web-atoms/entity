@@ -11,14 +11,12 @@ const getKey = (target, value) => {
     }
 };
 
+export type PropertyPath = Array<(item) => any>;
+
 /* eslint-disable @typescript-eslint/unified-signatures */
 export class Cloner<T> {
 
-    protected static copyProperties(src) {
-        if (Array.isArray(src)) {
-            return src.map((i) => Cloner.copyProperties(i));
-        }
-        const dest = {};
+    protected static copyProperties(src, dest = {}) {
         for (const key in src) {
             if (Object.prototype.hasOwnProperty.call(src, key)) {
                 const element = src[key];
@@ -43,66 +41,71 @@ export class Cloner<T> {
         return dest;
     }
 
-    public get copy() {
-        return this.value;
+    public get copy(): T {
+
+        const copy = Cloner.copyProperties(this.item);
+        if (this.path) {
+            for (const iterator of this.path) {
+                this.clone(this.item, copy, iterator);
+            }
+        }
+        return copy as any;
     }
 
-    constructor(protected item: T, protected value?: T) {
-        this.value = this.value ?? Cloner.copyProperties(item);
+    constructor(protected item: T, protected path?: PropertyPath[]) {
     }
 
     public include<TProperty>(property: (item: T) => ICollection<TProperty>): PropertyCloner<T, TProperty>;
     public include<TProperty>(property: (item: T) => TProperty[]): PropertyCloner<T, TProperty>;
     public include<TProperty>(property: (item: T) => TProperty): PropertyCloner<T, TProperty>;
     public include<TProperty>(property: any): PropertyCloner<T, TProperty> {
-        if (!this.item) {
-            return new PropertyCloner(this.value, this.item, undefined, undefined);
+        const last = [property];
+        return new PropertyCloner(this.item, this.path ? [... this.path, last]: [last], last);
+    }
+
+    private clone(src, dest, paths) {
+        if (!paths.length) {
+            return dest;
         }
-        let p = property(this.item);
-        const original = p;
-        const keyName = getKey(this.item, original);
-        const clone = this.value[keyName];
-        if (clone !== void 0) {
-            return new PropertyCloner(this.value, this.item, original, clone);
+        let [first, ... others] = paths;
+        let p = first(src);
+        if (!p) {
+            return dest;
         }
+        let original = p;
+        let name = getKey(src, p);
         if (Array.isArray(p)) {
-            p = p.map((i) => Cloner.copyProperties(i));
-        } else {
-            p = Cloner.copyProperties(p);
+            let existing = dest[name] ??= [];
+            for (let index = 0; index < p.length; index++) {
+                const element = p[index];
+                const existingItem = existing[index] ??= {};
+                Cloner.copyProperties(element, existingItem);
+                this.clone(element, existingItem, others);
+            }
+            return existing;
         }
-        this.value[keyName] = p;
-        return new PropertyCloner(this.value, this.item, original, p);
+
+        p = Cloner.copyProperties(p, dest[name] ?? undefined);
+        dest[name] = p;
+        this.clone(original, p, others);
+        return dest;
     }
 
 }
 
 export class PropertyCloner<T, TPrevious> extends Cloner<T> {
 
-    constructor (copy: T, item: T, private original: TPrevious, private property: TPrevious) {
-        super(item, copy);
+    constructor(item: T, path: PropertyPath[], private propertyPath: PropertyPath) {
+        super(item ,path);
     }
+    
 
     public thenInclude<TProperty>(property: (item: TPrevious) => ICollection<TProperty>): PropertyCloner<T, TProperty>;
     public thenInclude<TProperty>(property: (item: TPrevious) => TProperty[]): PropertyCloner<T, TProperty>;
     public thenInclude<TProperty>(property: (item: TPrevious) => TProperty): PropertyCloner<T, TProperty>;
     public thenInclude<TProperty>(property: any): PropertyCloner<T, TProperty> {
-        if (!this.original) {
-            return new PropertyCloner(this.value, this.item, undefined, undefined);
-        }
-        let p = property(this.original);
-        const o = p;
-        const keyName = getKey(this.property, o);
-        const clone = this.property[keyName];
-        if (clone !== void 0) {
-            return new PropertyCloner(this.value, this.item, o, clone);
-        }
-        if (Array.isArray(p)) {
-            p = p.map((i) => Cloner.copyProperties(i));
-        } else {
-            p = Cloner.copyProperties(p);
-        }
-        o[keyName] = p;
-        return new PropertyCloner(this.value, this.item, o, p);
+        this.propertyPath.push(property);
+        return new PropertyCloner(this.item, this.path, this.propertyPath);
     }
 
 }

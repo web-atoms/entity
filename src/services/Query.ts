@@ -239,11 +239,12 @@ export default class Query<T> {
             splitInclude = false,
             cacheSeconds = 0
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
+        
         const  methods = encodeURIComponent(JSON.stringify(this.methods));
         const trace = this.traceQuery ? "true" : "false";
         let url;
         if (cacheSeconds > 0) {
-            url  = `${this.ec.url}cached/${this.name}/${methods}/${
+            url  = `${this.ec.url}cached64/${this.name}/${btoa(methods)}/${
                 start}/${size}/${splitInclude}/${trace}/${cacheSeconds}`;
         } else {
         url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
