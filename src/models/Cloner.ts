@@ -67,6 +67,7 @@ export class Cloner<T> {
         } else {
             p = Cloner.copyProperties(p);
         }
+        this.value[keyName] = p;
         return new PropertyCloner(this.value, this.item, original, p);
     }
 
@@ -84,7 +85,7 @@ export class PropertyCloner<T, TPrevious> extends Cloner<T> {
     public thenInclude<TProperty>(property: any): PropertyCloner<T, TProperty> {
         let p = property(this.original);
         const o = p;
-        const keyName = getKey(this.item, o);
+        const keyName = getKey(this.property, o);
         const clone = this.property[keyName];
         if (clone !== void 0) {
             return new PropertyCloner(this.value, this.item, o, clone);
@@ -94,6 +95,7 @@ export class PropertyCloner<T, TPrevious> extends Cloner<T> {
         } else {
             p = Cloner.copyProperties(p);
         }
+        this.property[keyName] = p;
         return new PropertyCloner(this.value, this.item, o, p);
     }
 
