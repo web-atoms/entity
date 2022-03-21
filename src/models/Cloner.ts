@@ -101,7 +101,7 @@ export class PropertyCloner<T, TPrevious> extends Cloner<T> {
         } else {
             p = Cloner.copyProperties(p);
         }
-        this.property[keyName] = p;
+        o[keyName] = p;
         return new PropertyCloner(this.value, this.item, o, p);
     }
 
