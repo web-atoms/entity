@@ -32,7 +32,9 @@ ArrayPrototype.select = ArrayPrototype.map;
 ArrayPrototype.selectMany = function(x) {
     const r = [];
     for (const iterator of this) {
-        r.push(... x(iterator));
+        const items = x(iterator);
+        if (Array.isArray(items))
+            r.push(... items);
     }
     return r;
 };
