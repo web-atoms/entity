@@ -4,40 +4,30 @@ export const dateFormatISORegEx = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{
 
 export default function resolve(target) {
     const cache = [];
-    const pending = [];
-    const visited = new Map<object, object>();
-    function mapIds(t) {
+    function map(t) {
+        if (typeof t !== "object") {
+            return t;
+        }
         if (Array.isArray(t)) {
-            for (const iterator of t) {
-                mapIds(iterator);
-            }
-            return;
+            return t.map(map);
         }
-        const { $id, $type } = t;
-        if ($type) {
-            if (cache[$id]) {
-                // we have read this...
-                return;
-            }
+        const { $id, $ref } = t;
+        if ($ref) {
+            return cache[$ref];
+        } 
+
+        if ($id) {
             cache[$id] = t;
-        } else {
-            if ($id) {
-                pending.push(t);
-                return;
-            }
-            if (visited.has(t)) {
-                return;
-            }
-            visited.set(t, t);
-        }
+        }        
         for (const key in t) {
             if (Object.prototype.hasOwnProperty.call(t, key)) {
                 const element = t[key];
                 switch (typeof element) {
                     case "object":
-                        if (element !== null) {
-                            mapIds(element);
+                        if (!element) {
+                            continue;
                         }
+                        t[key] = map(element);
                         continue;
                     case "string":
                         if (dateFormatISORegEx.test(element)) {
@@ -47,24 +37,7 @@ export default function resolve(target) {
                 }
             }
         }
+        return t;
     }
-    if (target === null) {
-        return;
-    }
-    if (typeof target === "object") {
-        mapIds(target);
-        for (const iterator of pending) {
-            const existing = cache[iterator.$id];
-            if (!existing) {
-                continue;
-            }
-            for (const key in existing) {
-                if (Object.prototype.hasOwnProperty.call(existing, key)) {
-                    const element = existing[key];
-                    iterator[key] = element;
-                }
-            }
-        }
-    }
-    return target;
+    return map(target);
 }
