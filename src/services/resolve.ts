@@ -13,7 +13,8 @@ export default function resolve(target) {
         }
         const { $id, $ref } = t;
         if ($ref) {
-            return cache[$ref];
+            t = cache[$ref];
+            return t;
         } 
 
         if ($id) {
@@ -21,13 +22,14 @@ export default function resolve(target) {
         }        
         for (const key in t) {
             if (Object.prototype.hasOwnProperty.call(t, key)) {
-                const element = t[key];
+                let element = t[key];
                 switch (typeof element) {
                     case "object":
                         if (!element) {
                             continue;
                         }
-                        t[key] = map(element);
+                        element = map(element);
+                        t[key] = element;
                         continue;
                     case "string":
                         if (dateFormatISORegEx.test(element)) {
@@ -39,5 +41,6 @@ export default function resolve(target) {
         }
         return t;
     }
-    return map(target);
+    target = map(target);
+    return target;
 }
