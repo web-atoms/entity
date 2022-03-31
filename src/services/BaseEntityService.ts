@@ -5,6 +5,7 @@ import { Cloner } from "../models/Cloner";
 import IClrEntity from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
 import HttpSession, { IHttpRequest } from "./HttpSession";
+import mergeProperties from "./mergeProperties";
 import Query from "./Query";
 import resolve from "./resolve";
 
@@ -33,8 +34,9 @@ ArrayPrototype.selectMany = function(x) {
     const r = [];
     for (const iterator of this) {
         const items = x(iterator);
-        if (Array.isArray(items))
+        if (Array.isArray(items)) {
             r.push(... items);
+        }
     }
     return r;
 };
@@ -208,9 +210,11 @@ export default class BaseEntityService extends HttpSession {
 
     public save<T extends IClrEntity>(body: T): Promise<T>;
     public save<T extends IClrEntity>(body: T[]): Promise<T[]>;
-    public save(body: any): Promise<any> {
+    public async save(body: any): Promise<any> {
         const url = this.url;
-        return this.postJson({url, body});
+        const result = await this.postJson({url, body});
+        mergeProperties(result, body);
+        return body;
     }
 
     public async update(e: IClrEntity, update: IModifications): Promise<any> {
