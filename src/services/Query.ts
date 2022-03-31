@@ -8,6 +8,18 @@ import StringHelper from "./StringHelper";
 const replacer = /(===)|(!==)|(\(\{)|(\.(some|map|filter|find)\s*\()|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
 
 export const convertToLinq = (x: string) => {
+    x = x.replace(/(\s+)|((CastAs|EF)\_[0-9]\.default\.)/g, (s, first, second) => {
+        if (s === first) {
+            return " ";
+        }
+        if (s.startsWith("EF")) {
+            return "EF.";
+        }
+        if (s.startsWith("CastAs")) {
+            return "CastAs.";
+        }
+        return s;
+    });
     x = x.replace(replacer, (s) => {
         switch (s) {
             case "===": return "==";
@@ -25,12 +37,12 @@ export const convertToLinq = (x: string) => {
             case ".includes (": return ".Contains(";
         }
         if (s.endsWith(":")) {
-            return s.substring(0, s.length - 1) + " = ";
+            return s.substring(0, s.length - 1) + " =";
         }
         return s.toUpperCase();
     });
     // reduce white space...
-    return x.replace(/\s+/g, " ").replace(/CastAs\_[0-9]\.default\./i, "CastAs.");
+    return x;
 };
 
 export function append<T>(original: T[], ... item: T[]) {

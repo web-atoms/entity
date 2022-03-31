@@ -12,8 +12,17 @@
     "cSpell.words": [
         "castas",
         "Cloner",
+        "DATEDIFF",
+        "DATETIME",
+        "DATETIMEFROMPARTS",
+        "DATETIMEOFFSETFROMPARTS",
+        "FREETEXT",
+        "FROMPARTS",
+        "ISDATE",
+        "ISNUMERIC",
         "Linq",
-        "navigations"
+        "navigations",
+        "syslanguages"
     ],	"eslint.alwaysShowStatus": true,
 	"editor.defaultFormatter": "dbaeumer.vscode-eslint",
 	"eslint.format.enable": true,
