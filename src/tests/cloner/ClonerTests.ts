@@ -6,7 +6,7 @@ import { Cloner } from "../../models/Cloner";
 
 export default class ClonerTest extends TestItem {
 
-    // @Test
+    @Test
     public cloneOneLevel(): void {
         const source = {
             emails: [

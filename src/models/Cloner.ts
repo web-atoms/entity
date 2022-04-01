@@ -1,4 +1,5 @@
 import { ICollection } from "../services/BaseEntityService";
+import cloneSource from "./cloneSource";
 
 const getKey = (target, value) => {
     for (const key in target) {
@@ -41,6 +42,8 @@ export class Cloner<T> {
         return dest;
     }
 
+    public readonly $type: string;
+
     public get copy(): T {
 
         const copy = Cloner.copyProperties(this.item);
@@ -53,6 +56,7 @@ export class Cloner<T> {
     }
 
     constructor(protected item: T, protected path?: PropertyPath[]) {
+        this.$type = (item as any).$type;
     }
 
     public include<TProperty>(property: (item: T) => ICollection<TProperty>): PropertyCloner<T, TProperty>;
@@ -64,6 +68,7 @@ export class Cloner<T> {
     }
 
     private clone(src, dest, paths) {
+        dest[cloneSource] = src;
         if (!paths.length) {
             return dest;
         }
