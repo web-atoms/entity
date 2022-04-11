@@ -2,7 +2,7 @@ import { App } from "@web-atoms/core/dist/App";
 import { CancelToken } from "@web-atoms/core/dist/core/types";
 import { Inject } from "@web-atoms/core/dist/di/Inject";
 import { Cloner } from "../models/Cloner";
-import IClrEntity from "../models/IClrEntity";
+import IClrEntity, { IClrExtendedEntity } from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
 import HttpSession, { IHttpRequest } from "./HttpSession";
 import mergeProperties from "./mergeProperties";
@@ -198,7 +198,7 @@ export default class BaseEntityService extends HttpSession {
         return new Query(this, m.name, [], false);
     }
 
-    public delete(body: IClrEntity): Promise<void> {
+    public delete<T extends IClrEntity>(body: T): Promise<void> {
         const url = this.url;
         return this.deleteJson({url, body});
     }
@@ -217,7 +217,7 @@ export default class BaseEntityService extends HttpSession {
         return body;
     }
 
-    public async update(e: IClrEntity, update: IModifications): Promise<any> {
+    public async update<T extends IClrEntity>(e: T, update: IModifications): Promise<any> {
         await this.bulkUpdate([e], update);
         for (const key in update) {
             if (Object.prototype.hasOwnProperty.call(update, key)) {
@@ -228,8 +228,8 @@ export default class BaseEntityService extends HttpSession {
         return e;
     }
 
-    public async bulkUpdate(
-        entities: IClrEntity[],
+    public async bulkUpdate<T extends IClrEntity>(
+        entities: T[],
         update: IModifications,
         throwWhenNotFound: boolean = false): Promise<void> {
         const model = await this.model();
@@ -247,8 +247,8 @@ export default class BaseEntityService extends HttpSession {
         await this.putJson({url, body});
     }
 
-    public async bulkDelete(
-        entities: IClrEntity[],
+    public async bulkDelete<T extends IClrEntity>(
+        entities: T[],
         throwWhenNotFound: boolean = false): Promise<void> {
         const model = await this.model();
         const keys = [];
