@@ -20,6 +20,7 @@ export interface ICollection<T> extends Array<T> {
     count?(filter?: (item: T) => boolean): number;
     toArray?(): ICollection<T>;
     toList?(): ICollection<T>;
+    take?(n: number): ICollection<T>;
     orderBy?(item: (item: T) => any): ICollection<T>;
     thenBy?(item: (item: T) => any): ICollection<T>;
     orderByDescending?(item: (item: T) => any): ICollection<T>;
