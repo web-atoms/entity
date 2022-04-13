@@ -244,7 +244,7 @@ export default class BaseEntityService extends HttpSession {
             keys.push(key);
         }
         const body = { keys, update, throwWhenNotFound };
-        const url = `${this.url}/bulk`;
+        const url = `${this.url}bulk`;
         await this.putJson({url, body});
     }
 
@@ -261,7 +261,7 @@ export default class BaseEntityService extends HttpSession {
             }
             keys.push(key);
         }
-        const url = `${this.url}/bulk`;
+        const url = `${this.url}bulk`;
         const body = { keys, throwWhenNotFound };
         await this.deleteJson({
             url,
