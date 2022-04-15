@@ -9,6 +9,41 @@ import mergeProperties from "./mergeProperties";
 import Query from "./Query";
 import resolve from "./resolve";
 
+export interface IGeometry {
+    latitude: number;
+    longitude: number;
+    wktString?: string;
+
+    difference?(g: IGeometry): IGeometry;
+
+    intersection?(g: IGeometry): IGeometry;
+
+    union?(g: IGeometry): IGeometry;
+
+    symmetricDifference?(g: IGeometry): IGeometry;
+
+    distance?(g: IGeometry): number;
+
+    isWithinDistance?(g: IGeometry, distance: number): boolean;
+
+    touches?(g: IGeometry): boolean;
+
+    intersects?(g: IGeometry): boolean;
+
+    crosses?(g: IGeometry): boolean;
+
+    within?(g: IGeometry): boolean;
+
+    contains?(g: IGeometry): boolean;
+
+    overlaps?(g: IGeometry): boolean;
+
+    covers?(g: IGeometry): boolean;
+
+    coveredBy?(g: IGeometry): boolean;
+
+}
+
 export interface ICollection<T> extends Array<T> {
     sum?(filter: (item: T) => number): number;
     avg?(filter: (item: T) => number): number;
