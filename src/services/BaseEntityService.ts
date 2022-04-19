@@ -48,7 +48,7 @@ export interface ICollection<T> extends Array<T> {
     sum?(filter: (item: T) => number): number;
     avg?(filter: (item: T) => number): number;
     where?(filter: (item: T) => boolean): ICollection<T>;
-    any?(filter: (item: T) => boolean): boolean;
+    any?(filter?: (item: T) => boolean): boolean;
     select?<TR>(select: (item: T) => TR): ICollection<TR>;
     selectMany?<TR>(select: (item: T) => TR[]): ICollection<TR>;
     firstOrDefault?(filter?: (item: T) => boolean): T;
