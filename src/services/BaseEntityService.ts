@@ -225,7 +225,7 @@ export default class BaseEntityService extends HttpSession {
         if (this.entityModel) {
             return this.entityModel;
         }
-        const c = await this.getJson<IEntityModel[]>({ url: `${this.url}/model` });
+        const c = await this.getJson<IEntityModel[]>({ url: `${this.url}model` });
         this.entityModel = new EntityContext(c);
         return this.entityModel;
     }
