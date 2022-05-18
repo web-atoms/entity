@@ -204,10 +204,10 @@ export interface IPagedListParams extends IListParams {
 
 export interface IModel<T> {
     name: string;
-    create(properties?: Omit<T, "$type">)
+    create?(properties?: Omit<T, "$type">);
 }
 
-export class Model<T> implements IModel<T>{
+export class Model<T> implements IModel<T> {
     constructor(public name: string) {
 
     }
@@ -215,7 +215,6 @@ export class Model<T> implements IModel<T>{
         return {$type: this.name, ...  properties };
     }
 }
-
 
 export default class BaseEntityService extends HttpSession {
 
