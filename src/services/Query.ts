@@ -255,11 +255,11 @@ export default class Query<T> {
         const trace = this.traceQuery ? "true" : "false";
         let url;
         if (cacheSeconds > 0) {
-            url  = `${this.ec.url}cached/${this.name}/${methods}/${
-                start}/${size}/${splitInclude}/${trace}/${cacheSeconds}`;
+            url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
+                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}`;
         } else {
-        url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
-            start}&size=${size}&trace=${trace}`;
+            url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
+                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}`;
         }
         return (this.ec as any).getJson({
             url,
