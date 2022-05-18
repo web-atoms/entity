@@ -9,11 +9,46 @@ import mergeProperties from "./mergeProperties";
 import Query from "./Query";
 import resolve from "./resolve";
 
+export interface IGeometry {
+    latitude: number;
+    longitude: number;
+    wktString?: string;
+
+    difference?(g: IGeometry): IGeometry;
+
+    intersection?(g: IGeometry): IGeometry;
+
+    union?(g: IGeometry): IGeometry;
+
+    symmetricDifference?(g: IGeometry): IGeometry;
+
+    distance?(g: IGeometry): number;
+
+    isWithinDistance?(g: IGeometry, distance: number): boolean;
+
+    touches?(g: IGeometry): boolean;
+
+    intersects?(g: IGeometry): boolean;
+
+    crosses?(g: IGeometry): boolean;
+
+    within?(g: IGeometry): boolean;
+
+    contains?(g: IGeometry): boolean;
+
+    overlaps?(g: IGeometry): boolean;
+
+    covers?(g: IGeometry): boolean;
+
+    coveredBy?(g: IGeometry): boolean;
+
+}
+
 export interface ICollection<T> extends Array<T> {
     sum?(filter: (item: T) => number): number;
     avg?(filter: (item: T) => number): number;
     where?(filter: (item: T) => boolean): ICollection<T>;
-    any?(filter: (item: T) => boolean): boolean;
+    any?(filter?: (item: T) => boolean): boolean;
     select?<TR>(select: (item: T) => TR): ICollection<TR>;
     selectMany?<TR>(select: (item: T) => TR[]): ICollection<TR>;
     firstOrDefault?(filter?: (item: T) => boolean): T;
@@ -169,7 +204,18 @@ export interface IPagedListParams extends IListParams {
 
 export interface IModel<T> {
     name: string;
+    create(properties?: Omit<T, "$type">)
 }
+
+export class Model<T> implements IModel<T>{
+    constructor(public name: string) {
+
+    }
+    public create(properties?: Omit<T, "$type">) {
+        return {$type: this.name, ...  properties };
+    }
+}
+
 
 export default class BaseEntityService extends HttpSession {
 
@@ -190,7 +236,7 @@ export default class BaseEntityService extends HttpSession {
         if (this.entityModel) {
             return this.entityModel;
         }
-        const c = await this.getJson<IEntityModel[]>({ url: `${this.url}/model` });
+        const c = await this.getJson<IEntityModel[]>({ url: `${this.url}model` });
         this.entityModel = new EntityContext(c);
         return this.entityModel;
     }
@@ -244,7 +290,7 @@ export default class BaseEntityService extends HttpSession {
             keys.push(key);
         }
         const body = { keys, update, throwWhenNotFound };
-        const url = `${this.url}/bulk`;
+        const url = `${this.url}bulk`;
         await this.putJson({url, body});
     }
 
@@ -261,7 +307,7 @@ export default class BaseEntityService extends HttpSession {
             }
             keys.push(key);
         }
-        const url = `${this.url}/bulk`;
+        const url = `${this.url}bulk`;
         const body = { keys, throwWhenNotFound };
         await this.deleteJson({
             url,
