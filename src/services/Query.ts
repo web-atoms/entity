@@ -5,7 +5,7 @@ import type { IListParams, IPagedListParams, IQueryMethod } from "./BaseEntitySe
 import resolve from "./resolve";
 import StringHelper from "./StringHelper";
 
-const replacer = /(===)|(!==)|(\(\{)|(\.[a-z])|([a-zA-Z0-9]+\s*\:)/g;
+const replacer = /(===)|(!==)|(\(\{)|(\.[a-zA-Z0-9]+)|([a-zA-Z0-9]+\s*\:)/g;
 
 export const convertToLinq = (x: string) => {
     x = x.replace(/(\s+)|((CastAs|EF)\_[0-9]\.default\.)/g, (s, first, second) => {
@@ -20,24 +20,23 @@ export const convertToLinq = (x: string) => {
         }
         return s;
     });
+    replacer.lastIndex = 0;
     x = x.replace(replacer, (s) => {
         switch (s) {
             case "===": return "==";
             case "!==": return "!=";
             case "({": return "( new {";
-            // case ".some(": return ".Any(";
-            // case ".some (": return ".Any(";
-            // case ".map(": return ".Select(";
-            // case ".map (": return ".Select(";
-            // case ".filter(": return ".Where(";
-            // case ".filter (": return ".Where(";
-            // case ".find(": return ".FirstOrDefault(";
-            // case ".find (": return ".FirstOrDefault(";
-            // case ".includes(": return ".Contains(";
-            // case ".includes (": return ".Contains(";
+            case ".some": return ".Any";
+            case ".map": return ".Select";
+            case ".filter": return ".Where";
+            case ".find": return ".FirstOrDefault";
+            case ".includes": return ".Contains";
         }
         if (s.endsWith(":")) {
             return s.substring(0, s.length - 1) + " =";
+        }
+        if (s.startsWith(".") && s.length > 2) {
+            return s[0] + s[1].toUpperCase() + s.substring(2);
         }
         return s.toUpperCase();
     });

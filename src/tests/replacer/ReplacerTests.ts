@@ -34,5 +34,8 @@ export default class ReplacerTests extends TestItem {
         match(
             `(x) => x.Files.Any((f) => f.Name.StartsWith("image"))`,
             (x) => x.files.any((f) => f.name.startsWith("image")));
-    }
+        match(
+            `(x) => x.Files.Any((f) => f.Name.StartsWith("image"))`,
+                (x) => x.files.some((f) => f.name.startsWith("image")));
+        }
 }
