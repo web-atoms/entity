@@ -10,7 +10,7 @@ export default function mergeProperties(src, target, visited = new Map()) {
             const srcElement = src[index];
             const targetElement = target[index];
             if (targetElement) {
-                mergeProperties(srcElement, targetElement);
+                mergeProperties(srcElement, targetElement, visited);
                 continue;
             }
             target[index] = targetElement;
