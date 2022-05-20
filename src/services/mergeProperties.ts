@@ -1,6 +1,10 @@
 import cloneSource from "../models/cloneSource";
 
-export default function mergeProperties(src, target) {
+export default function mergeProperties(src, target, visited = new Map()) {
+    if (visited.has(src)) {
+        return;
+    }
+    visited.set(src, true);
     if (Array.isArray(src)) {
         for (let index = 0; index < src.length; index++) {
             const srcElement = src[index];
@@ -41,10 +45,10 @@ export default function mergeProperties(src, target) {
                 if (cloneTarget) {
                     const cloneTargetElement = cloneTarget[key];
                     if (cloneTargetElement) {
-                        mergeProperties(srcElement, cloneTargetElement);
+                        mergeProperties(srcElement, cloneTargetElement, visited);
                     }
                 }
-                mergeProperties(srcElement, targetElement);
+                mergeProperties(srcElement, targetElement, visited);
                 continue;
             }
             target[key] = targetElement;
