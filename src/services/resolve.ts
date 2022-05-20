@@ -18,6 +18,7 @@ export default function resolve(target) {
         } 
 
         if ($id) {
+            t.$deleted = false;
             cache[$id] = t;
         }        
         for (const key in t) {

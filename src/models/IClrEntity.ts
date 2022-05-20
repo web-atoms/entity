@@ -13,6 +13,7 @@ export interface INavigationProperties {
 
 export default interface IClrEntity {
     $type: string;
+    $deleted?: boolean;
     $navigations?: INavigationProperties;
 }
 
