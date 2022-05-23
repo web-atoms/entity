@@ -5,7 +5,7 @@ import type { IListParams, IPagedListParams, IQueryMethod } from "./BaseEntitySe
 import resolve from "./resolve";
 import StringHelper from "./StringHelper";
 
-const replacer = /(===)|(!==)|(\(\{)|(\.[a-zA-Z0-9]+)|([a-zA-Z0-9]+\s*\:)/g;
+const replacer = /(===)|(!==)|(\(\s*\{)|(\.[a-zA-Z0-9]+)|([a-zA-Z0-9]+\s*\:\s*\{?)/g;
 
 export const convertToLinq = (x: string) => {
     x = x.replace(/(\s+)|((CastAs|EF)\_[0-9]\.default\.)/g, (s, first, second) => {
@@ -32,13 +32,20 @@ export const convertToLinq = (x: string) => {
             case ".find": return ".FirstOrDefault";
             case ".includes": return ".Contains";
         }
-        if (s.endsWith(":")) {
-            return s.substring(0, s.length - 1) + " =";
+        if (s.endsWith("{")) {
+            const index = s.indexOf(":");
+            const v = s.substring(0, index) + " = new {";
+            return v;
+        }
+        const trimmed = s.trim();
+        if (trimmed.endsWith(":")) {
+            return trimmed.substring(0, trimmed.length - 1) + " = ";
         }
         if (s.startsWith(".") && s.length > 2) {
             return s[0] + s[1].toUpperCase() + s.substring(2);
         }
-        return s.toUpperCase();
+        // return s.toUpperCase();
+        return s;
     });
     // reduce white space...
     return x;
