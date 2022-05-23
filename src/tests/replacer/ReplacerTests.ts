@@ -30,6 +30,13 @@ export default class ReplacerTests extends TestItem {
     }
 
     @Test
+    public replaceSelectNested() {
+        match(
+            `(x) => ( new { name = x.FirstName, email = ( new { address = x.EmailAddress }) })`,
+            (x) => ({ name: x.firstName, email: ({ address: x.emailAddress }) }));
+    }
+
+    @Test
     public replaceMethods() {
         match(
             `(x) => x.Files.Any((f) => f.Name.StartsWith("image"))`,
