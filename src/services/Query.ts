@@ -1,7 +1,7 @@
 import { CancelToken } from "@web-atoms/core/dist/core/types";
 import IPagedList from "../models/IPagedList";
 import type BaseEntityService from "./BaseEntityService";
-import type { IListParams, IPagedListParams, IQueryMethod } from "./BaseEntityService";
+import type { ICollection, IListParams, IPagedListParams, IQueryMethod } from "./BaseEntityService";
 import resolve from "./resolve";
 import StringHelper from "./StringHelper";
 
@@ -80,65 +80,22 @@ export default class Query<T> {
         }
     }
 
-    public where(p: Omit<T, "$type">): Query<T>;
+    public where<TR>(q: (x: T) => any): Query<T>;
     public where<TP>(p: TP, q: (p: TP) => (x: T) => any): Query<T>;
     public where<TP>(tOrP: TP | T, q?: (p: TP) => (x: T) => any): Query<T> {
+        return this.process("where", tOrP, q) as any;
+    }
 
-        const pl = [];
-        let i = 0;
-        let text: string = "x => ";
-        if (arguments.length === 1) {
-            for (const key in tOrP as any) {
-                if (Object.prototype.hasOwnProperty.call(tOrP, key)) {
-                    const element = tOrP[key];
-                    text += `${i ? " && " : ""}x.${key} == @${i}`;
-                    pl.push(element);
-                }
-            }
-            return new Query(this.ec, this.name, append(this.methods, ["where", text, ...pl] ), this.traceQuery);
-        }
-
-        const p = tOrP as any;
-        text = q(p).toString();
-        const pfn = StringHelper.findParameter(q.toString()).trim();
-        for (const key in p) {
-            if (Object.prototype.hasOwnProperty.call(p, key)) {
-                const element = p[key];
-                const pn = `@${i++}`;
-                text = text.split(`${pfn}.${key}`).join(pn);
-                pl.push(element);
-            }
-        }
-        text = convertToLinq(text);
-        return new Query(this.ec, this.name, append(this.methods, ["where", text, ...pl] ), this.traceQuery);
+    public groupBy<TR, TK>(q: (x: T) => TR): Query<{ key: TK } & ICollection<T>>;
+    public groupBy<TP, TK>(p: TP, q: (p: TP) => (x: T) => any): Query<{ key: TK } & ICollection<T>>;
+    public groupBy<TP, TK>(tOrP: TP | T, q?: (p: TP) => (x: T) => any): Query<{ key: TK } & ICollection<T>> {
+        return this.process("groupBy", tOrP, q) as any;
     }
 
     public select<TR>(q: (x: T) => TR): Query<TR>;
     public select<TP, TR>(tp: TP, q: (p: TP) => (x: T) => TR): Query<TR>;
     public select<TP, TR>(tOrP: TP | ((x: T) => TR), q?: (p: TP) => (x: T) => TR): Query<TR> {
-
-        if (arguments.length === 1) {
-            const select = convertToLinq(tOrP.toString());
-            return new Query(this.ec, this.name, append(this.methods, ["select", select] ), this.traceQuery);
-        }
-
-        const pl = [];
-        let i = 0;
-        let text: string = "x => ";
-        const p = tOrP as any;
-        text = q(p).toString();
-        const x = StringHelper.findParameter(text);
-        const pfn = StringHelper.findParameter(q.toString()).trim();
-        for (const key in p) {
-            if (Object.prototype.hasOwnProperty.call(p, key)) {
-                const element = p[key];
-                const pn = `@${i++}`;
-                text = text.split(`${pfn}.${key}`).join(pn);
-                pl.push(element);
-            }
-        }
-        text = convertToLinq(text);
-        return new Query(this.ec, this.name, append(this.methods, ["select", text, ...pl] ), this.traceQuery);
+        return this.process("select", tOrP, q) as any;
     }
 
     /**
@@ -211,24 +168,28 @@ export default class Query<T> {
         return list.items[0];
     }
 
-    public orderBy(filter: (i: T) => any): Query<T> {
-        const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, ["orderBy", text]), this.traceQuery);
+    public orderBy<TR>(q: (x: T) => TR): Query<T>;
+    public orderBy<TP, TR>(p: TP, q: (p: TP) => (x: T) => TR): Query<T>;
+    public orderBy<TP, TR>(tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<T> {
+        return this.process("orderBy", tOrP, q);
     }
 
-    public orderByDescending(filter: (i: T) => any): Query<T> {
-        const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, ["orderByDescending", text]), this.traceQuery);
+    public orderByDescending<TR>(q: (x: T) => TR): Query<T>;
+    public orderByDescending<TP, TR>(p: TP, q: (p: TP) => (x: T) => TR): Query<T>;
+    public orderByDescending<TP, TR>(tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<T> {
+        return this.process("orderByDescending", tOrP, q);
     }
 
-    public thenBy(filter: (i: T) => any): Query<T> {
-        const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, ["thenBy", text]), this.traceQuery);
+    public thenBy<TR>(q: (x: T) => TR): Query<T>;
+    public thenBy<TP, TR>(p: TP, q: (p: TP) => (x: T) => TR): Query<T>;
+    public thenBy<TP, TR>(tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<T> {
+        return this.process("thenBy", tOrP, q);
     }
 
-    public thenByDescending(filter: (i: T) => any): Query<T> {
-        const text = convertToLinq(filter.toString());
-        return new Query(this.ec, this.name, append(this.methods, ["thenByDescending", text]), this.traceQuery);
+    public thenByDescending<TR>(q: (x: T) => TR): Query<T>;
+    public thenByDescending<TP, TR>(p: TP, q: (p: TP) => (x: T) => TR): Query<T>;
+    public thenByDescending<TP, TR>(tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<T> {
+        return this.process("thenByDescending", tOrP, q);
     }
 
     public trace(): Query<T> {
@@ -277,5 +238,29 @@ export default class Query<T> {
         const select = convertToLinq(a.toString());
         return new Query(this.ec, this.name, append(this.methods, ["thenInclude", select] ), this.traceQuery);
     }
+
+    private process<TP, TR>(name: any, tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<T> {
+
+        if (!q) {
+            const select = convertToLinq(tOrP.toString());
+            return new Query(this.ec, this.name, append(this.methods, [name , select] ), this.traceQuery);
+        }
+
+        const pl = [];
+        let i = 0;
+        const p = tOrP as any;
+        let text = q(p).toString();
+        const pfn = StringHelper.findParameter(q.toString()).trim();
+        for (const key in p) {
+            if (Object.prototype.hasOwnProperty.call(p, key)) {
+                const element = p[key];
+                const pn = `@${i++}`;
+                text = text.split(`${pfn}.${key}`).join(pn);
+                pl.push(element);
+            }
+        }
+        text = convertToLinq(text);
+        return new Query(this.ec, this.name, append(this.methods, [name , text, ...pl] ), this.traceQuery);
+    }    
 
 }
