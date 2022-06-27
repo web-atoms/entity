@@ -1,4 +1,5 @@
 import { CancelToken } from "@web-atoms/core/dist/core/types";
+import DateTime from "@web-atoms/date-time/dist/DateTime";
 import IPagedList from "../models/IPagedList";
 import type BaseEntityService from "./BaseEntityService";
 import type { ICollection, IListParams, IPagedListParams, IQueryMethod } from "./BaseEntityService";
@@ -67,6 +68,14 @@ export interface IIncludedArrayQuery<T, TR, TRA extends TR[]> extends Required<Q
     thenInclude<TP>(q: (x: TR) => TP): IIncludedQuery<T, TP>;
 }
 
+interface IEntityWithDateRange<T> {
+    entity: T,
+    range: {
+        startDate: DateTime,
+        endDate: DateTime
+    }
+}
+
 export default class Query<T> {
 
     constructor(
@@ -86,10 +95,8 @@ export default class Query<T> {
         return this.process("where", tOrP, q) as any;
     }
 
-    public groupBy<TR, TK>(q: (x: T) => TR): Query<{ key: TK } & ICollection<T>>;
-    public groupBy<TP, TK>(p: TP, q: (p: TP) => (x: T) => any): Query<{ key: TK } & ICollection<T>>;
-    public groupBy<TP, TK>(tOrP: TP | T, q?: (p: TP) => (x: T) => any): Query<{ key: TK } & ICollection<T>> {
-        return this.process("groupBy", tOrP, q) as any;
+    public joinDateRange(start: DateTime, end: DateTime, step: "Day" | "Month" | "Year" | "Week" | "Hour"): Query<IEntityWithDateRange<T>> {
+        return new Query(this.ec, this.name, append(this.methods, ["joinDateRange", "@0,@1,@2", start, end, step] ), this.traceQuery) as any;
     }
 
     public select<TR>(q: (x: T) => TR): Query<TR>;

@@ -168,7 +168,7 @@ export interface IBulkDeleteModel {
 export type IQueryMethod =
     ["select", string, ... any[]]
     | ["where", string, ... any[]]
-    | ["groupBy", string, ... any[]]
+    | ["joinDateRange", string, ... any[]]
     | ["orderBy", string, ... any[]]
     | ["orderByDescending", string, ... any[]]
     | ["thenBy", string, ... any[]]
