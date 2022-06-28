@@ -45,8 +45,8 @@ export interface IGeometry {
 }
 
 export interface ICollection<T> extends Omit<Array<T>, "groupBy"> {
-    sum?(filter: (item: T) => number): number;
-    average?(filter: (item: T) => number): number;
+    sum?(filter?: (item: T) => number): number;
+    average?(filter?: (item: T) => number): number;
     groupBy?<TK>(this: ICollection<T>, selector: (item: T) => TK): ICollection<{ key: TK} & ICollection<T>>;
     where?(filter: (item: T) => boolean): ICollection<T>;
     any?(filter?: (item: T) => boolean): boolean;
