@@ -46,7 +46,7 @@ export interface IGeometry {
 
 export interface ICollection<T> extends Omit<Array<T>, "groupBy"> {
     sum?(filter: (item: T) => number): number;
-    avg?(filter: (item: T) => number): number;
+    average?(filter: (item: T) => number): number;
     groupBy?<TK>(this: ICollection<T>, selector: (item: T) => TK): ICollection<{ key: TK} & ICollection<T>>;
     where?(filter: (item: T) => boolean): ICollection<T>;
     any?(filter?: (item: T) => boolean): boolean;
@@ -90,7 +90,7 @@ ArrayPrototype.sum = function(f) {
     }
     return n;
 };
-ArrayPrototype.avg = function(f) {
+ArrayPrototype.average = function(f) {
     if (this.length === 0) {
         return 0;
     }
