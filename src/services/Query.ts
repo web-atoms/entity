@@ -95,8 +95,14 @@ export default class Query<T> {
         return this.process("where", tOrP, q) as any;
     }
 
-    public joinDateRange(start: DateTime, end: DateTime, step: "Day" | "Month" | "Year" | "Week" | "Hour"): Query<IEntityWithDateRange<T>> {
-        return new Query(this.ec, this.name, append(this.methods, ["joinDateRange", "@0,@1,@2", start, end, step] ), this.traceQuery) as any;
+    public joinDateRange(
+        start: DateTime,
+        end: DateTime,
+        step: "Day" | "Month" | "Year" | "Week" | "Hour"): Query<IEntityWithDateRange<T>> {
+        return new Query(
+            this.ec,
+            this.name,
+            append(this.methods, ["joinDateRange", "@0,@1,@2", start, end, step] ), this.traceQuery) as any;
     }
 
     public select<TR>(q: (x: T) => TR): Query<TR>;
@@ -210,9 +216,20 @@ export default class Query<T> {
      * @returns Promise<T[]>
      */
     public async toArray({
-        cancelToken, doNotResolve, hideActivityIndicator, cacheSeconds
+        cancelToken,
+        doNotResolve,
+        hideActivityIndicator,
+        cacheSeconds,
+        cacheVersion
     }: IListParams = {}): Promise<T[]> {
-        const r = await this.toPagedList({ size: -1, cacheSeconds, cancelToken, doNotResolve, hideActivityIndicator });
+        const r = await this.toPagedList({
+            size: -1,
+            cacheSeconds,
+            cancelToken,
+            doNotResolve,
+            hideActivityIndicator,
+            cacheVersion
+        });
         return r.items;
     }
 
@@ -221,6 +238,7 @@ export default class Query<T> {
             start = 0,
             size = 100,
             cancelToken,
+            cacheVersion = "1",
             hideActivityIndicator,
             splitInclude = false,
             cacheSeconds = 0
@@ -230,10 +248,10 @@ export default class Query<T> {
         let url;
         if (cacheSeconds > 0) {
             url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
-                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}`;
+                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}&cacheVersion=${cacheVersion}`;
         } else {
             url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
-                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}`;
+                start}&size=${size}&trace=${trace}`;
         }
         return (this.ec as any).getJson({
             url,
@@ -268,6 +286,6 @@ export default class Query<T> {
         }
         text = convertToLinq(text);
         return new Query(this.ec, this.name, append(this.methods, [name , text, ...pl] ), this.traceQuery);
-    }    
+    }
 
 }

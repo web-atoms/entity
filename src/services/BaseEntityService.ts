@@ -195,6 +195,11 @@ export interface IListParams {
     cacheSeconds?: number;
 
     /**
+     * Arbitrary cache version to invalidate previous version
+     */
+    cacheVersion?: string;
+
+    /**
      * Split server side includes
      */
     splitInclude?: boolean;
