@@ -107,8 +107,8 @@ export default class Query<T> {
     }
 
     public select<TR>(q: (x: T) => TR): Query<TR>;
-    public select<TP, TR>(tp: TP, q: (p: TP) => (x: T) => TR): Query<TR>;
-    public select<TP, TR>(tOrP: TP | ((x: T) => TR), q?: (p: TP) => (x: T) => TR): Query<TR> {
+    public select<TR, TP = any>(tp: TP, q: (p: TP) => (x: T) => TR): Query<TR>;
+    public select<TR, TP = any>(tOrP: TP | ((x: T) => TR), q?: (p: TP) => (x: T) => TR): Query<TR> {
         return this.process("select", tOrP, q) as any;
     }
 
