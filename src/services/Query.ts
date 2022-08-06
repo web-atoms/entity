@@ -261,7 +261,7 @@ export default class Query<T> {
                     start,
                     size,
                     splitInclude,
-                    trace
+                    trace: this.traceQuery
                 }
             });
         }
