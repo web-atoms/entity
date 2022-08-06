@@ -252,6 +252,7 @@ export default class Query<T> {
             if (cacheSeconds > 0) {
                 throw new Error("Generated query too big for caching");
             }
+            url = `${this.ec.url}methods/${this.name}`;
             return (this.ec as any).postJson({
                 url,
                 cancelToken,
