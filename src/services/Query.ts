@@ -3,6 +3,7 @@ import DateTime from "@web-atoms/date-time/dist/DateTime";
 import IPagedList from "../models/IPagedList";
 import type BaseEntityService from "./BaseEntityService";
 import type { ICollection, IListParams, IPagedListParams, IQueryMethod } from "./BaseEntityService";
+import HttpSession from "./HttpSession";
 import resolve from "./resolve";
 import StringHelper from "./StringHelper";
 
@@ -243,14 +244,31 @@ export default class Query<T> {
             splitInclude = false,
             cacheSeconds = 0
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
-        const  methods = encodeURIComponent(JSON.stringify(this.methods));
-        const trace = this.traceQuery ? "true" : "false";
         let url;
+        const trace = this.traceQuery ? "true" : "false";
+        const methods = JSON.stringify(this.methods);
+        const encodedMethods = encodeURIComponent(methods);
+        if (encodedMethods.length > 1824) {
+            if (cacheSeconds > 0) {
+                throw new Error("Generated query too big for caching");
+            }
+            return (this.ec as any).postJson({
+                url,
+                cancelToken,
+                body: {
+                    methods,
+                    start,
+                    size,
+                    splitInclude,
+                    trace
+                }
+            });
+        }
         if (cacheSeconds > 0) {
-            url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
+            url  = `${this.ec.url}methods/${this.name}?methods=${encodedMethods}&start=${
                 start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}&cacheVersion=${cacheVersion}`;
         } else {
-            url  = `${this.ec.url}methods/${this.name}?methods=${methods}&start=${
+            url  = `${this.ec.url}methods/${this.name}?methods=${encodedMethods}&start=${
                 start}&size=${size}&trace=${trace}`;
         }
         return (this.ec as any).getJson({
