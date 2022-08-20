@@ -77,6 +77,35 @@ interface IEntityWithDateRange<T> {
     }
 }
 
+export class QueryComposer<Q> {
+
+    private query: string = "";
+    private parameters: any = {};
+    private index = 0;
+
+    constructor(private separator = " || ") {
+
+    }
+
+    public add<P>(p: P, q: (p: P) => (item: Q) => any) {
+        const prefix = `p${this.index++}_`;
+        const text = q.toString();
+        const target = this.parameters;
+        for (const key in p) {
+            if (Object.prototype.hasOwnProperty.call(p, key)) {
+                const element = p[key];
+                const name = `${prefix}${key}`;
+                target[name] = element;
+            }
+        }
+    }
+
+    public asQuery(): any[] {
+        return [this.parameters, this.query];
+    }
+
+}
+
 export default class Query<T> {
 
     constructor(
