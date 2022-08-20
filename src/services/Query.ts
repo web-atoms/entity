@@ -296,7 +296,7 @@ export default class Query<T> {
                 url,
                 cancelToken,
                 body: {
-                    methods,
+                    methods: this.methods,
                     start,
                     size,
                     splitInclude,
