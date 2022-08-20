@@ -79,7 +79,7 @@ interface IEntityWithDateRange<T> {
 
 export class QueryComposer<Q> {
 
-    private query: string = "";
+    private query: string = "p => x => ";
     private parameters: any = {};
     private index = 0;
 
@@ -88,16 +88,26 @@ export class QueryComposer<Q> {
     }
 
     public add<P>(p: P, q: (p: P) => (item: Q) => any) {
-        const prefix = `p${this.index++}_`;
-        const text = q.toString();
+        if (this.index) {
+            this.query += this.separator;
+        }
+        const suffix = `_${this.index++}`;
+        let text = q.toString();
+        const pfn = StringHelper.findParameter(text).trim();
+        text = text.substring(text.indexOf("=>") + 2);
+        const xfn = StringHelper.findParameter(text).trim();
         const target = this.parameters;
         for (const key in p) {
             if (Object.prototype.hasOwnProperty.call(p, key)) {
                 const element = p[key];
-                const name = `${prefix}${key}`;
+                const name = `${key}${suffix}`;
                 target[name] = element;
+                text = text.split(`${pfn}.${key}`).join(`p.${name}`);
+                text = text.split(`${xfn}.`).join(`x.`);
             }
         }
+        text = text.substring(text.indexOf("=>") + 2);
+        this.query += text;
     }
 
     public asQuery(): any[] {
