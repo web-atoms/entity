@@ -311,9 +311,11 @@ export default class Query<T> {
             url  = `${this.ec.url}methods/${this.name}?methods=${encodedMethods}&start=${
                 start}&size=${size}&trace=${trace}`;
         }
-        return (this.ec as any).getJson({
+        // @ts-ignore
+        return this.ec.getJson({
             url,
-            cancelToken
+            cancelToken,
+            hideActivityIndicator
         });
     }
 

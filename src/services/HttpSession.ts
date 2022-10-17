@@ -40,6 +40,7 @@ export interface IHttpRequest extends RequestInit {
     headers?: any;
     body?: any;
     cancelToken?: CancelToken;
+    hideActivityIndicator?: boolean;
 }
 
 export default class HttpSession {

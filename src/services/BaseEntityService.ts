@@ -323,8 +323,8 @@ export default class BaseEntityService extends HttpSession {
 
     protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
         const app = this.app;
-        if (!app) {
-            return super.fetchJson(options);
+        if (!app || options?.hideActivityIndicator) {
+            return await super.fetchJson(options);
         }
         const disposable = app.createBusyIndicator({ title: options.url });
         try {
