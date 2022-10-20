@@ -2,7 +2,7 @@ import { CancelToken } from "@web-atoms/core/dist/core/types";
 import DateTime from "@web-atoms/date-time/dist/DateTime";
 import IPagedList from "../models/IPagedList";
 import type BaseEntityService from "./BaseEntityService";
-import type { ICollection, IListParams, IPagedListParams, IQueryMethod } from "./BaseEntityService";
+import type { ICollection, IListParams, IModel, IPagedListParams, IQueryMethod } from "./BaseEntityService";
 import HttpSession from "./HttpSession";
 import resolve from "./resolve";
 import StringHelper from "./StringHelper";
@@ -196,6 +196,14 @@ export default class Query<T> {
             filters += last;
         }
         return new Query(this.ec, this.name, append(this.methods, ["select", filters, ...params] ), this.traceQuery);
+    }
+
+    public join<TInner, TKey>(model: IModel<TInner>, left: (T) => TKey, right: (T) => TKey)
+        : Query<{ entity: T, inner: TInner }> {
+        return new Query(this.ec,
+            this.name,
+                append(this.methods, [
+                    "join" as any, model.name, left.toString(), right.toString()] ), this.traceQuery) as any;
     }
 
     public include<TR>(q: (x: T) => TR[]): IIncludedArrayQuery<T, TR, TR[]>;
