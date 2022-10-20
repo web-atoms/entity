@@ -211,15 +211,16 @@ export interface IPagedListParams extends IListParams {
 
 export interface IModel<T> {
     name: string;
-    create?(properties?: Omit<T, "$type">);
+    create?(properties?: Omit<T, "$type">): T;
 }
 
 export class Model<T> implements IModel<T> {
     constructor(public name: string) {
 
     }
-    public create(properties?: Omit<T, "$type">) {
-        return {$type: this.name, ...  properties };
+    public create(properties: Omit<T, "$type"> = {} as any): T {
+        (properties as any).$type = this.name;
+        return properties as T;
     }
 }
 
