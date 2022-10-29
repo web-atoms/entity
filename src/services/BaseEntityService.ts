@@ -265,6 +265,9 @@ export default class BaseEntityService extends HttpSession {
     public save<T extends IClrEntity>(body: T): Promise<T>;
     public save<T extends IClrEntity>(body: T[]): Promise<T[]>;
     public async save(body: any): Promise<any> {
+        if (Array.isArray(body) && body.length === 0) {
+            return body;
+        }
         const url = this.url;
         const result = await this.postJson({url, body});
         mergeProperties(result, body);
