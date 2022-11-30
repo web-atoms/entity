@@ -61,7 +61,7 @@ import cloneSource from "../models/cloneSource";
 
 const merged = Symbol();
 
-const isObject = (o) => typeof o === "object" && !(o instanceof Date);
+const isObject = (o) => typeof o === "object" && o !== null && !(o instanceof Date);
 
 export default function mergeProperties(src, target, path: string = "0", visited = new Map()) {
     if (visited.has(path)) {
