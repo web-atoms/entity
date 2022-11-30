@@ -61,6 +61,8 @@ import cloneSource from "../models/cloneSource";
 
 const merged = Symbol();
 
+const isObject = (o) => typeof o === "object" && !(o instanceof Date);
+
 export default function mergeProperties(src, target, path: string = "0", visited = new Map()) {
     if (visited.has(path)) {
         return;
@@ -74,7 +76,7 @@ export default function mergeProperties(src, target, path: string = "0", visited
         for (let index = 0; index < src.length; index++) {
             const srcElement = src[index];
             const targetElement = target[index];
-            if (typeof targetElement === "object" && !(targetElement instanceof Date)) {
+            if (isObject(targetElement)) {
                 mergeProperties(srcElement, targetElement, `${path}.${index}`, visited);
                 continue;
             }
@@ -106,7 +108,7 @@ export default function mergeProperties(src, target, path: string = "0", visited
                 continue;
             }
             const targetElement = target[key];
-            if (typeof targetElement !== "object" && !(targetElement instanceof Date)) {
+            if (isObject(targetElement)) {
                 if (cloneTarget) {
                     const cloneTargetElement = cloneTarget[key];
                     if (cloneTargetElement) {
