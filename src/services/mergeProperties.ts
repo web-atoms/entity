@@ -74,7 +74,7 @@ export default function mergeProperties(src, target, path: string = "0", visited
         for (let index = 0; index < src.length; index++) {
             const srcElement = src[index];
             const targetElement = target[index];
-            if (targetElement) {
+            if (typeof targetElement === "object" && !(targetElement instanceof Date)) {
                 mergeProperties(srcElement, targetElement, `${path}.${index}`, visited);
                 continue;
             }
