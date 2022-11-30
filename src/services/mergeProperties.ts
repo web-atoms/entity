@@ -59,10 +59,16 @@ import cloneSource from "../models/cloneSource";
 //     }
 // }
 
+const merged = Symbol();
+
 export default function mergeProperties(src, target, path: string = "0", visited = new Map()) {
     if (visited.has(path)) {
         return;
     }
+    if (target[merged]) {
+        return;
+    }
+    target[merged] = true;
     visited.set(path, true);
     if (Array.isArray(src)) {
         for (let index = 0; index < src.length; index++) {
