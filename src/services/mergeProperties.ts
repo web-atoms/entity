@@ -106,7 +106,7 @@ export default function mergeProperties(src, target, path: string = "0", visited
                 continue;
             }
             const targetElement = target[key];
-            if (targetElement) {
+            if (typeof targetElement !== "object" && !(targetElement instanceof Date)) {
                 if (cloneTarget) {
                     const cloneTargetElement = cloneTarget[key];
                     if (cloneTargetElement) {
