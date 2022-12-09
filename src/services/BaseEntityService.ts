@@ -44,12 +44,17 @@ export interface IGeometry {
 
 }
 
+
+export interface IKeyCollection<TKey, T> extends ICollection<T> {
+    key?: TKey;
+}
+
 export interface ICollection<T> extends Omit<Array<T>, "groupBy"> {
     sum?(filter?: (item: T) => number): number;
     min?(filter?: (item: T) => number): number;
     max?(filter?: (item: T) => number): number;
     average?(filter?: (item: T) => number): number;
-    groupBy?<TK>(this: ICollection<T>, selector: (item: T) => TK): ICollection<{ key: TK} & ICollection<T>>;
+    groupBy?<TK>(this: ICollection<T>, selector: (item: T) => TK): ICollection<IKeyCollection<TK,T>>;
     where?(filter: (item: T) => boolean): ICollection<T>;
     any?(filter?: (item: T) => boolean): boolean;
     select?<TR>(select: (item: T) => TR): ICollection<TR>;
