@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@web-atoms/core": "^v2.1.383",
+    "@web-atoms/core": "^v2.1.475",
     "@web-atoms/date-time": "^1.0.26",
     "@web-atoms/module-loader": "^2.0.5",
     "@web-atoms/web-controls": "^2.1.1",

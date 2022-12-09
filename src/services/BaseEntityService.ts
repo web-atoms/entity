@@ -49,7 +49,7 @@ export interface IKeyCollection<TKey, T> extends ICollection<T> {
     key?: TKey;
 }
 
-export interface ICollection<T> extends Omit<Array<T>, "groupBy"> {
+export interface ICollection<T> extends Array<T> {
     sum?(filter?: (item: T) => number): number;
     min?(filter?: (item: T) => number): number;
     max?(filter?: (item: T) => number): number;
