@@ -14,10 +14,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@web-atoms/core": "^v2.1.475",
-    "@web-atoms/date-time": "^1.0.26",
-    "@web-atoms/module-loader": "^2.0.5",
-    "@web-atoms/web-controls": "^2.1.1",
+    "@web-atoms/core": "^v2.2.3",
+    "@web-atoms/date-time": "^1.1.0",
+    "@web-atoms/module-loader": "^2.1.2",
+    "@web-atoms/web-controls": "^2.2.1",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
