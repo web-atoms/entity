@@ -71,6 +71,8 @@ export interface IIncludedArrayQuery<T, TR, TRA extends TR[]> extends Required<Q
     thenInclude<TP>(q: (x: TR) => TP): IIncludedQuery<T, TP>;
 }
 
+export type Func<T,TR> = (x: T) => TR;
+
 export interface IDateRange {
     startDate: DateTime,
     endDate: DateTime
@@ -149,9 +151,9 @@ export default class Query<T> {
             append(this.methods, ["joinDateRange", "@0,@1,@2", start, end, step] ), this.traceQuery) as any;
     }
 
-    public selectWith<TI, TR>(model: IModel<TI>, q: (x: T, y: TI[]) => TR): Query<TR>;
-    public selectWith<TI, TR, TP = any>(model: IModel<TI>,tp: TP, q: (p: TP) => (x: T, y: TI[]) => TR): Query<TR>;
-    public selectWith<TI, TR, TP = any>(model: IModel<TI>, tOrP: TP | ((x: T, y: TI[]) => TR), q?: (p: TP) => (x: T, y: TI[]) => TR): Query<TR> {
+    public selectWith<TI, TR>(model: IModel<TI>, q: Func<TI[],Func<T,TR>>): Query<TR>;
+    public selectWith<TI, TR, TP = any>(model: IModel<TI>,tp: TP, q: (p: TP) => Func<TI[],Func<T,TR>>): Query<TR>;
+    public selectWith<TI, TR, TP = any>(model: IModel<TI>, tOrP: TP | (Func<TI[],Func<T,TR>>), q?: (p: TP) => Func<TI[],Func<T,TR>>): Query<TR> {
         var nq = new Query(
             this.ec,
             this.name,
