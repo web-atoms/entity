@@ -261,7 +261,7 @@ export default class BaseEntityService extends HttpSession {
             this,
             "NeuroSpeech.EntityAccessControl.DateRange",
             [
-                ["DateRange" as any, "@0,@1,@2", start, end, step]
+                ["dateRange" as any, "@0,@1,@2", start, end, step]
             ], false) as any;
     }
 
