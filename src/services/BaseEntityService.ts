@@ -7,7 +7,7 @@ import IClrEntity, { IClrExtendedEntity } from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
 import HttpSession, { IHttpRequest } from "./HttpSession";
 import mergeProperties from "./mergeProperties";
-import Query, { IEntityWithDateRange, stepTypes } from "./Query";
+import Query, { IDateRange, IEntityWithDateRange, stepTypes } from "./Query";
 import resolve from "./resolve";
 
 export interface IGeometry {
@@ -256,8 +256,13 @@ export default class BaseEntityService extends HttpSession {
         return this.entityModel;
     }
 
-    public dateRange(start: DateTime, end: DateTime, step: stepTypes ): Query<IEntityWithDateRange<{}>> {
-        return new Query(this, "NeuroSpeech.EntityAccessControl.DateRange",[], false).joinDateRange(start, end, step) as any;
+    public dateRange(start: DateTime, end: DateTime, step: stepTypes ): Query<IDateRange> {
+        return new Query(
+            this,
+            "NeuroSpeech.EntityAccessControl.DateRange",
+            [
+                ["DateRange" as any, "@0,@1,@2", start, end, step]
+            ], false) as any;
     }
 
     public query<T extends IClrEntity>(m: IModel<T>): Query<T> {

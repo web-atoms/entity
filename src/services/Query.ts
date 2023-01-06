@@ -71,12 +71,14 @@ export interface IIncludedArrayQuery<T, TR, TRA extends TR[]> extends Required<Q
     thenInclude<TP>(q: (x: TR) => TP): IIncludedQuery<T, TP>;
 }
 
+export interface IDateRange {
+    startDate: DateTime,
+    endDate: DateTime
+}
+
 export interface IEntityWithDateRange<T> {
     entity: T,
-    range: {
-        startDate: DateTime,
-        endDate: DateTime
-    }
+    range: IDateRange
 }
 
 export class QueryComposer<Q> {
