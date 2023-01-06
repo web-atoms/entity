@@ -1,12 +1,13 @@
 import { App } from "@web-atoms/core/dist/App";
 import { CancelToken } from "@web-atoms/core/dist/core/types";
 import { Inject } from "@web-atoms/core/dist/di/Inject";
+import DateTime from "@web-atoms/date-time/dist/DateTime";
 import { Cloner } from "../models/Cloner";
 import IClrEntity, { IClrExtendedEntity } from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
 import HttpSession, { IHttpRequest } from "./HttpSession";
 import mergeProperties from "./mergeProperties";
-import Query from "./Query";
+import Query, { stepTypes } from "./Query";
 import resolve from "./resolve";
 
 export interface IGeometry {
@@ -253,6 +254,10 @@ export default class BaseEntityService extends HttpSession {
         const c = await this.getJson<IEntityModel[]>({ url: `${this.url}model` });
         this.entityModel = new EntityContext(c);
         return this.entityModel;
+    }
+
+    public dateRange(start: DateTime, end: DateTime, step: stepTypes ) {
+        return new Query(this, "NeuroSpeech.EntityAccessControl.DateRange",[], false).joinDateRange(start, end, step);
     }
 
     public query<T extends IClrEntity>(m: IModel<T>): Query<T> {

@@ -7,6 +7,8 @@ import HttpSession from "./HttpSession";
 import resolve from "./resolve";
 import StringHelper from "./StringHelper";
 
+export type stepTypes = "Day" | "Month" | "Year" | "Week" | "Hour";
+
 const replacer = /(===)|(!==)|(\(\s*\{)|(\.[a-zA-Z0-9]+)|([a-zA-Z0-9]+\s*\:\s*\{?)/g;
 
 export const convertToLinq = (x: string) => {
@@ -69,7 +71,7 @@ export interface IIncludedArrayQuery<T, TR, TRA extends TR[]> extends Required<Q
     thenInclude<TP>(q: (x: TR) => TP): IIncludedQuery<T, TP>;
 }
 
-interface IEntityWithDateRange<T> {
+export interface IEntityWithDateRange<T> {
     entity: T,
     range: {
         startDate: DateTime,
@@ -138,11 +140,21 @@ export default class Query<T> {
     public joinDateRange(
         start: DateTime,
         end: DateTime,
-        step: "Day" | "Month" | "Year" | "Week" | "Hour"): Query<IEntityWithDateRange<T>> {
+        step: stepTypes): Query<IEntityWithDateRange<T>> {
         return new Query(
             this.ec,
             this.name,
             append(this.methods, ["joinDateRange", "@0,@1,@2", start, end, step] ), this.traceQuery) as any;
+    }
+
+    public selectWith<TI, TR>(model: IModel<TI>, q: (x: T, y: TI[]) => TR): Query<TR>;
+    public selectWith<TI, TR, TP = any>(model: IModel<TI>,tp: TP, q: (p: TP) => (x: T, y: TI[]) => TR): Query<TR>;
+    public selectWith<TI, TR, TP = any>(model: IModel<TI>, tOrP: TP | ((x: T, y: TI[]) => TR), q?: (p: TP) => (x: T, y: TI[]) => TR): Query<TR> {
+        var nq = new Query(
+            this.ec,
+            this.name,
+            append(this.methods, ["selectWith" as any, model.name] ), this.traceQuery) as any
+        return nq.process("select", tOrP, q);
     }
 
     public select<TR>(q: (x: T) => TR): Query<TR>;
@@ -198,7 +210,7 @@ export default class Query<T> {
         return new Query(this.ec, this.name, append(this.methods, ["select", filters, ...params] ), this.traceQuery);
     }
 
-    public join<TInner, TKey>(model: IModel<TInner>, left: (T) => TKey, right: (T) => TKey)
+    public join<TInner, TKey>(model: IModel<TInner>, left: (x: T) => TKey, right: (x: T) => TKey)
         : Query<{ entity: T, inner: TInner }> {
         return new Query(this.ec,
             this.name,
