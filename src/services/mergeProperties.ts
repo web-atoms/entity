@@ -59,25 +59,28 @@ import cloneSource from "../models/cloneSource";
 //     }
 // }
 
-const merged = Symbol();
+// const merged = Symbol();
 
 const isObject = (o) => typeof o === "object" && o !== null && !(o instanceof Date);
 
-export default function mergeProperties(src, target, path: string = "0", visited = new Map()) {
+export default function mergeProperties(
+    src,
+    target,
+    path: string = "0", visited = new Map(), merged = new Map()) {
     if (visited.has(path)) {
         return;
     }
-    if (target[merged]) {
+    if (merged.has(target)) {
         return;
     }
-    target[merged] = true;
+    merged.set(target, true);
     visited.set(path, true);
     if (Array.isArray(src)) {
         for (let index = 0; index < src.length; index++) {
             const srcElement = src[index];
             const targetElement = target[index];
             if (isObject(targetElement)) {
-                mergeProperties(srcElement, targetElement, `${path}.${index}`, visited);
+                mergeProperties(srcElement, targetElement, `${path}.${index}`, visited, merged);
                 continue;
             }
             target[index] = targetElement;
@@ -112,10 +115,10 @@ export default function mergeProperties(src, target, path: string = "0", visited
                 if (cloneTarget) {
                     const cloneTargetElement = cloneTarget[key];
                     if (cloneTargetElement) {
-                        mergeProperties(srcElement, cloneTargetElement, path + ".$" + key, visited);
+                        mergeProperties(srcElement, cloneTargetElement, path + ".$" + key, visited, merged);
                     }
                 }
-                mergeProperties(srcElement, targetElement, path + "." + key, visited);
+                mergeProperties(srcElement, targetElement, path + "." + key, visited, merged);
                 continue;
             }
             target[key] = targetElement;
