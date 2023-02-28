@@ -1,10 +1,7 @@
-import { CancelToken } from "@web-atoms/core/dist/core/types";
 import DateTime from "@web-atoms/date-time/dist/DateTime";
 import IPagedList from "../models/IPagedList";
 import type BaseEntityService from "./BaseEntityService";
-import type { ICollection, IListParams, IModel, IPagedListParams, IQueryMethod } from "./BaseEntityService";
-import HttpSession from "./HttpSession";
-import resolve from "./resolve";
+import type { IListParams, IModel, IPagedListParams, IQueryMethod } from "./BaseEntityService";
 import StringHelper from "./StringHelper";
 
 export type stepTypes = "Day" | "Month" | "Year" | "Week" | "Hour";

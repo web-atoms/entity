@@ -1,6 +1,4 @@
-import { App } from "@web-atoms/core/dist/App";
-import { CancelToken } from "@web-atoms/core/dist/core/types";
-import { Inject } from "@web-atoms/core/dist/di/Inject";
+import { CancelToken, IDisposable } from "@web-atoms/core/dist/core/types";
 import DateTime from "@web-atoms/date-time/dist/DateTime";
 import { Cloner } from "../models/Cloner";
 import IClrEntity, { IClrExtendedEntity } from "../models/IClrEntity";
@@ -234,14 +232,13 @@ export class Model<T> implements IModel<T> {
 
 export default class BaseEntityService extends HttpSession {
 
+    public static busyIndicatorFactory: ((a: { title: string}) => IDisposable);
+
     public url: string = "/api/entity/";
 
     protected resultConverter = resolve;
 
     private entityModel: EntityContext;
-
-    @Inject
-    private app: App;
 
     public cloner<T>(item: T): Cloner<T> {
         return new Cloner(item);
@@ -343,11 +340,10 @@ export default class BaseEntityService extends HttpSession {
     }
 
     protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
-        const app = this.app;
-        if (!app || options?.hideActivityIndicator) {
+        if (!BaseEntityService.busyIndicatorFactory || options?.hideActivityIndicator) {
             return await super.fetchJson(options);
         }
-        const disposable = app.createBusyIndicator({ title: options.url });
+        const disposable = BaseEntityService.busyIndicatorFactory({ title: options.url });
         try {
             return await super.fetchJson(options);
         } finally {
