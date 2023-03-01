@@ -55,7 +55,12 @@ export default class HttpSession {
                 ab.abort();
             });
         }
-        const response = await fetch(options.url, options);
+        let response: Response;;
+        if (this.interceptFetch) {
+            response = await this.interceptFetch(options.url, options);
+        } else {
+            response = await fetch(options.url, options);
+        }
         const contentType = response.headers.get("Content-Type")?.toString() as string;
         if (response.status >= 400) {
             if (contentType && !contentType.includes("/json")) {
@@ -77,6 +82,10 @@ export default class HttpSession {
             throw new Error(`Unable to convert to json\r\n${contentType}}`);
         }
         return this.resultConverter(await response.json());
+    }
+
+    protected interceptFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+        throw new Error("not supported");
     }
 
     protected getJson<T>(options: IHttpRequest) {
@@ -125,3 +134,6 @@ export default class HttpSession {
     }
 
 }
+
+// @ts-expect-error
+delete HttpSession.prototype.interceptFetch;
