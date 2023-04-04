@@ -352,8 +352,8 @@ export default class Query<T> {
                     split: splitInclude,
                     count,
                     trace,
-                    function: queryFunction || null,
-                    arguments: queryFunction ? args : null
+                    function: queryFunction || void 0,
+                    arguments: queryFunction ? args : void 0
                 }
             });
         }
