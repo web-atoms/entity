@@ -180,7 +180,8 @@ export type IQueryMethod =
     | ["thenBy", string, ... any[]]
     | ["thenByDescending", string, ... any[]]
     | ["include", string]
-    | ["thenInclude", string];
+    | ["thenInclude", string]
+    | ["dateRange", string, ... any[]];
 
 export interface IListParams {
     cancelToken?: CancelToken;
@@ -255,16 +256,21 @@ export default class BaseEntityService extends HttpSession {
     }
 
     public dateRange(start: DateTime, end: DateTime, step: stepTypes ): Query<IDateRange> {
-        return new Query(
-            this,
-            "NeuroSpeech.EntityAccessControl.DateRange",
+        return new Query({ service: this, name: "NeuroSpeech.EntityAccessControl.DateRange", traceQuery: false},
             [
-                ["dateRange" as any, "@0,@1,@2", start, end, step]
-            ], false) as any;
+                ["dateRange", "@0,@1,@2", start, end, step]
+            ]);
     }
 
-    public query<T extends IClrEntity>(m: IModel<T>): Query<T> {
-        return new Query(this, m.name, [], false);
+    public query<T extends IClrEntity>(m: IModel<T>,
+            queryFunction?: string,
+            ... args: any[]): Query<T> {
+        return new Query({
+            service: this,
+            name: m.name,
+            queryFunction,
+            args
+        });
     }
 
     public delete<T extends IClrEntity>(body: T): Promise<void> {

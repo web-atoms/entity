@@ -121,13 +121,19 @@ export class QueryComposer<Q> {
 
 }
 
+interface IQueryContext {
+    service: BaseEntityService;
+    name: string;
+    traceQuery?: boolean;
+    queryFunction?: string;
+    args?: any[];
+}
+
 export default class Query<T> {
 
     constructor(
-        private ec: BaseEntityService,
-        private name: string,
-        private methods: IQueryMethod[],
-        private traceQuery: boolean
+        private context: IQueryContext,
+        private methods: IQueryMethod[] = []
     ) {
         if (!methods) {
             throw new Error("Methods cannot be empty");
@@ -144,10 +150,7 @@ export default class Query<T> {
         start: DateTime,
         end: DateTime,
         step: stepTypes): Query<IEntityWithDateRange<T>> {
-        return new Query(
-            this.ec,
-            this.name,
-            append(this.methods, ["joinDateRange", "@0,@1,@2", start, end, step] ), this.traceQuery) as any;
+        return this.append(["joinDateRange", "@0,@1,@2", start, end, step] );
     }
 
     public selectWith<TI, TR>(model: IModel<TI>, q: SelectWithFunc<T, TI, TR>): Query<TR>;
@@ -156,11 +159,8 @@ export default class Query<T> {
         model: IModel<TI>,
         tOrP: TP | (SelectWithFunc<T, TI, TR>),
         q?: (p: TP) => SelectWithFunc<T, TI, TR>): Query<TR> {
-        const nq = new Query(
-            this.ec,
-            this.name,
-            append(this.methods, ["selectWith" as any, model.name] ), this.traceQuery) as any
-        return nq.process("select", tOrP, q);
+        const nq = this.append(["selectWith" as any, model.name]);
+        return nq.process("select", tOrP, q as any) as any;
     }
 
     public select<TR>(q: (x: T) => TR): Query<TR>;
@@ -193,7 +193,7 @@ export default class Query<T> {
         // return new Query(this.ec, this.name, append(this.filter, { query: filters, parameters: params }),
         //     this.orderBys,
         //     this.includeProps);
-        return new Query(this.ec, this.name, append(this.methods, ["where", filters, ...params]), this.traceQuery);
+        return this.append(["where", filters, ...params]);
     }
 
     public selectLinq<TR>(query: TemplateStringsArray, ...args: any[]): Query<TR> {
@@ -213,15 +213,12 @@ export default class Query<T> {
         if (last) {
             filters += last;
         }
-        return new Query(this.ec, this.name, append(this.methods, ["select", filters, ...params] ), this.traceQuery);
+        return this.append(["select", filters, ...params] );
     }
 
     public join<TInner, TKey>(model: IModel<TInner>, left: (x: T) => TKey, right: (x: T) => TKey)
         : Query<{ entity: T, inner: TInner }> {
-        return new Query(this.ec,
-            this.name,
-                append(this.methods, [
-                    "join" as any, model.name, left.toString(), right.toString()] ), this.traceQuery) as any;
+        return this.append(["join" as any, model.name, left.toString(), right.toString()] ) as any;
     }
 
     public include<TR>(q: (x: T) => TR[]): IIncludedArrayQuery<T, TR, TR[]>;
@@ -229,14 +226,12 @@ export default class Query<T> {
     public include<TR>(... q: string[]): Query<T>;
     public include<TR>(tOrP: ((x: T) => any) | string, ... q: string[]): IIncludedQuery<T, TR> | Query<T> {
         if (typeof tOrP === "string") {
-            return new Query(this.ec, this.name, append(
-                this.methods,
+            return this.append(
                 ["include", tOrP],
-                ... q.map((s) => ["include", s] as IQueryMethod)
-                ), this.traceQuery) as any;
+                ... q.map((s) => ["include", s] as IQueryMethod)) as any;
         }
         const select = convertToLinq(tOrP.toString());
-        return new Query(this.ec, this.name, append(this.methods, ["include", select] ), this.traceQuery) as any;
+        return this.append(["include", select] ) as any;
     }
 
     public async firstOrDefault(p: IListParams = {}): Promise<T> {
@@ -273,7 +268,8 @@ export default class Query<T> {
     }
 
     public trace(): Query<T> {
-        return new Query(this.ec, this.name, this.methods, true);
+        this.context.traceQuery = true;
+        return this;
     }
 
     /**
@@ -313,36 +309,62 @@ export default class Query<T> {
             count = true
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         let url;
-        const trace = this.traceQuery ? "true" : "false";
+
+        const {
+            traceQuery,
+            name,
+            service,
+            queryFunction,
+            args
+        } = this.context;
+
+        const trace = traceQuery ? "true" : "false";
         const methods = JSON.stringify(this.methods);
-        const encodedMethods = encodeURIComponent(methods);
+        const fm = new URLSearchParams();
+        fm.append("methods", methods);
+        if (start) {
+            fm.append("start", start.toString());
+        }
+        if (size) {
+            fm.append("size", size.toString());
+        }
+        fm.append("count", count.toString());
+        if(trace) {
+            fm.append("trace", trace);
+        }
+        if (queryFunction) {
+            fm.append("function", queryFunction);
+            fm.append("args", JSON.stringify(args ?? "[]"));
+        }
+        const encodedMethods = fm.toString();
         if (encodedMethods.length > 1824) {
             if (cacheSeconds > 0) {
                 throw new Error("Generated query too big for caching");
             }
-            url = `${this.ec.url}methods/${this.name}`;
-            return (this.ec as any).postJson({
+            url = `${service.url}methods/${name}`;
+            return (service as any).postJson({
                 url,
                 cancelToken,
                 body: {
                     methods: this.methods,
                     start,
                     size,
-                    splitInclude,
+                    split: splitInclude,
                     count,
-                    trace: this.traceQuery
+                    trace,
+                    function: queryFunction || null,
+                    arguments: queryFunction ? args : null
                 }
             });
         }
         if (cacheSeconds > 0) {
-            url  = `${this.ec.url}methods/${this.name}?methods=${encodedMethods}&start=${
-                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}&cacheVersion=${cacheVersion}&count=${count}`;
+            fm.append("cache", cacheSeconds.toString());
+            fm.append("cv", cacheVersion);
         } else {
-            url  = `${this.ec.url}methods/${this.name}?methods=${encodedMethods}&start=${
-                start}&size=${size}&trace=${trace}&count=${count}`;
         }
+        url  = `${service.url}query/${name}?${fm.toString()}`;
         // @ts-ignore
-        return this.ec.getJson({
+        return service.getJson({
             url,
             cancelToken,
             hideActivityIndicator
@@ -351,14 +373,18 @@ export default class Query<T> {
 
     protected thenInclude(a): any {
         const select = convertToLinq(a.toString());
-        return new Query(this.ec, this.name, append(this.methods, ["thenInclude", select] ), this.traceQuery);
+        return this.append(["thenInclude", select]);
+    }
+
+    private append<T>(... methods: IQueryMethod[]) {
+        return new Query<T>(this.context, [ ... this.methods, ... methods ]);
     }
 
     private process<TP, TR>(name: any, tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<T> {
 
         if (!q) {
             const select = convertToLinq(tOrP.toString());
-            return new Query(this.ec, this.name, append(this.methods, [name , select] ), this.traceQuery);
+            return this.append<T>([name , select]);
         }
 
         const pl = [];
@@ -375,7 +401,7 @@ export default class Query<T> {
             }
         }
         text = convertToLinq(text);
-        return new Query(this.ec, this.name, append(this.methods, [name , text, ...pl] ), this.traceQuery);
+        return this.append([name , text, ...pl]);
     }
 
 }
