@@ -213,6 +213,7 @@ export interface IListParams {
 export interface IPagedListParams extends IListParams {
     start?: number;
     size?: number;
+    count?: boolean;
 }
 
 export interface IModel<T> {

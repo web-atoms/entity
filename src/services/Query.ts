@@ -243,6 +243,7 @@ export default class Query<T> {
         const lp = p as IPagedListParams;
         lp.size = 1;
         lp.start = 0;
+        lp.count = false;
         const list = await this.toPagedList(lp);
         return list.items[0];
     }
@@ -290,6 +291,7 @@ export default class Query<T> {
     }: IListParams = {}): Promise<T[]> {
         const r = await this.toPagedList({
             size: -1,
+            count: false,
             cacheSeconds,
             cancelToken,
             doNotResolve,
@@ -307,7 +309,8 @@ export default class Query<T> {
             cacheVersion = "1",
             hideActivityIndicator,
             splitInclude = false,
-            cacheSeconds = 0
+            cacheSeconds = 0,
+            count = true
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         let url;
         const trace = this.traceQuery ? "true" : "false";
@@ -326,16 +329,17 @@ export default class Query<T> {
                     start,
                     size,
                     splitInclude,
+                    count,
                     trace: this.traceQuery
                 }
             });
         }
         if (cacheSeconds > 0) {
             url  = `${this.ec.url}methods/${this.name}?methods=${encodedMethods}&start=${
-                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}&cacheVersion=${cacheVersion}`;
+                start}&size=${size}&trace=${trace}&cacheSeconds=${cacheSeconds}&cacheVersion=${cacheVersion}&count=${count}`;
         } else {
             url  = `${this.ec.url}methods/${this.name}?methods=${encodedMethods}&start=${
-                start}&size=${size}&trace=${trace}`;
+                start}&size=${size}&trace=${trace}&count=${count}`;
         }
         // @ts-ignore
         return this.ec.getJson({
