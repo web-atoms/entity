@@ -318,7 +318,7 @@ export default class Query<T> {
             args
         } = this.context;
 
-        const trace = traceQuery ? "true" : "false";
+        const trace = traceQuery;
         const methods = JSON.stringify(this.methods);
         const fm = new URLSearchParams();
         fm.append("methods", methods);
@@ -330,7 +330,7 @@ export default class Query<T> {
         }
         fm.append("count", count.toString());
         if(trace) {
-            fm.append("trace", trace);
+            fm.append("trace", trace ? "true" : "false");
         }
         if (queryFunction) {
             fm.append("function", queryFunction);
