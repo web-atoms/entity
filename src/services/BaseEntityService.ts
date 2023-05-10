@@ -234,8 +234,6 @@ export class Model<T> implements IModel<T> {
 
 export default class BaseEntityService extends HttpSession {
 
-    public static busyIndicatorFactory: ((a: { title: string}) => IDisposable);
-
     public url: string = "/api/entity/";
 
     protected resultConverter = resolve;
@@ -347,14 +345,21 @@ export default class BaseEntityService extends HttpSession {
     }
 
     protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
-        if (!BaseEntityService.busyIndicatorFactory || options?.hideActivityIndicator) {
+        if (!this.createBusyIndicator || options?.hideActivityIndicator) {
             return await super.fetchJson(options);
         }
-        const disposable = BaseEntityService.busyIndicatorFactory({ title: options.url });
+        const disposable = this.createBusyIndicator(options);
         try {
             return await super.fetchJson(options);
         } finally {
             disposable?.dispose();
         }
     }
+
+    protected createBusyIndicator(options: IHttpRequest) {
+        return { dispose() {}};
+    }
 }
+
+// @ts-expect-error
+delete BaseEntityService.prototype.createBusyIndicator;
