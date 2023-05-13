@@ -353,7 +353,7 @@ export default class Query<T> {
                     count,
                     trace,
                     function: queryFunction || void 0,
-                    arguments: queryFunction ? args : void 0
+                    args: queryFunction ? args : void 0
                 }
             });
         }
