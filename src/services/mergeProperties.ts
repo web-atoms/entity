@@ -122,7 +122,7 @@ export default function mergeProperties(
                 continue;
             }
             target[key] = targetElement;
-            if (cloneTarget) {
+            if (cloneTarget && targetElement !== void 0) {
                 cloneTarget[key] = targetElement;
             }
         }

@@ -15,6 +15,17 @@
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Test Selected File",
+            "args": ["${workspaceFolder}/node_modules/@web-atoms/unit-test/index.js", "./dist/tests"],
+            "cwd": "${workspaceFolder}",
+            "protocol": "inspector",
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ]
         }
     ]
 }
