@@ -63,7 +63,7 @@ export default class HttpSession {
         }
         const contentType = response.headers.get("Content-Type")?.toString() as string;
         if (response.status >= 400) {
-            if (contentType && !contentType.includes("/json")) {
+            if (contentType?.includes("/json")) {
                 const error = await response.json();
                 throw new JsonError(
                     typeof response === "string"
