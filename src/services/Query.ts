@@ -223,7 +223,7 @@ export default class Query<T> {
 
     public leftJoin<TInner, TKey>(model: IModel<TInner>, left: (x: T) => TKey, right: (x: TInner) => TKey)
     : Query<{ entity: T, inner: TInner }> {
-    return this.append(["join" as any, model.name, convertToLinq(left.toString()), convertToLinq(right.toString())] ) as any;
+    return this.append(["leftJoin" as any, model.name, convertToLinq(left.toString()), convertToLinq(right.toString())] ) as any;
 }
 
     public include<TR>(q: (x: T) => TR[]): IIncludedArrayQuery<T, TR, TR[]>;
