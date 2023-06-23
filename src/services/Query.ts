@@ -216,10 +216,15 @@ export default class Query<T> {
         return this.append(["select", filters, ...params] );
     }
 
-    public join<TInner, TKey>(model: IModel<TInner>, left: (x: T) => TKey, right: (x: T) => TKey)
+    public join<TInner, TKey>(model: IModel<TInner>, left: (x: T) => TKey, right: (x: TInner) => TKey)
         : Query<{ entity: T, inner: TInner }> {
-        return this.append(["join" as any, model.name, left.toString(), right.toString()] ) as any;
+        return this.append(["join" as any, model.name, convertToLinq(left.toString()), convertToLinq(right.toString())] ) as any;
     }
+
+    public leftJoin<TInner, TKey>(model: IModel<TInner>, left: (x: T) => TKey, right: (x: TInner) => TKey)
+    : Query<{ entity: T, inner: TInner }> {
+    return this.append(["join" as any, model.name, convertToLinq(left.toString()), convertToLinq(right.toString())] ) as any;
+}
 
     public include<TR>(q: (x: T) => TR[]): IIncludedArrayQuery<T, TR, TR[]>;
     public include<TR>(q: (x: T) => TR): IIncludedQuery<T, TR>;
