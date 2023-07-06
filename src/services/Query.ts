@@ -1,7 +1,7 @@
 import DateTime from "@web-atoms/date-time/dist/DateTime";
 import IPagedList from "../models/IPagedList";
 import type BaseEntityService from "./BaseEntityService";
-import type { IListParams, IModel, IPagedListParams, IQueryMethod } from "./BaseEntityService";
+import type { ICollection, IListParams, IModel, IPagedListParams, IQueryMethod } from "./BaseEntityService";
 import StringHelper from "./StringHelper";
 
 export type stepTypes = "Day" | "Month" | "Year" | "Week" | "Hour";
@@ -70,7 +70,7 @@ export interface IIncludedArrayQuery<T, TR, TRA extends TR[]> extends Required<Q
 
 export type Func<T, TR> = (x: T) => TR;
 
-export type SelectWithFunc<T, TI, TR> = (x: T, y: TI[]) => TR;
+export type SelectWithFunc<T, TI, TR> = (x: T, y: ICollection<TI>) => TR;
 
 export interface IDateRange {
     startDate: DateTime,
