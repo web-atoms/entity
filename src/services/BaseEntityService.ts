@@ -223,11 +223,27 @@ export interface IModel<T> {
 }
 
 export class Model<T> implements IModel<T> {
-    constructor(public name: string) {
-
+    private defaults: [string, any][];
+    constructor(public name: string, defaults: any = null) {
+        if (defaults) {
+            this.defaults = [];
+            for (const key in defaults) {
+                if (Object.prototype.hasOwnProperty.call(defaults, key)) {
+                    const element = defaults[key];
+                    this.defaults.push([key, element]);
+                }
+            }
+        }
     }
     public create(properties: Omit<T, "$type"> = {} as any): T {
         (properties as any).$type = this.name;
+        if (!this.defaults) {
+            for (const [key, value] of this.defaults) {
+                if (properties[key] === void 0) {
+                    properties[key] = value;
+                }
+            }
+        }
         return properties as T;
     }
 }
