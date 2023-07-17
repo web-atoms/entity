@@ -237,7 +237,7 @@ export class Model<T> implements IModel<T> {
     }
     public create(properties: Omit<T, "$type"> = {} as any): T {
         (properties as any).$type = this.name;
-        if (!this.defaults) {
+        if (this.defaults) {
             for (const [key, value] of this.defaults) {
                 if (properties[key] === void 0) {
                     properties[key] = value;
