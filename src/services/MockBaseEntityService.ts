@@ -4,6 +4,7 @@ import { EntityContext } from "../models/IEntityModel";
 import IPagedList from "../models/IPagedList";
 import BaseEntityService, { IBulkDeleteModel, IBulkUpdateModel, IModel, IQueryMethod } from "./BaseEntityService";
 import Query from "./Query";
+import { QueryProcessor } from "./QueryProcessor";
 
 const replacer = /(\.[a-z0-9\_])|([a-z0-9\_]\())/ig;
 
@@ -189,6 +190,8 @@ class MockEntityRestService {
 }
 
 export default class MockBaseEntityService extends BaseEntityService {
+
+    public queryProcessor: QueryProcessor = "DotNet";
 
     public entityContext: EntityContext;
 
