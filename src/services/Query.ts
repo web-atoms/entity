@@ -122,11 +122,12 @@ export class QueryComposer<Q> {
 }
 
 interface IQueryContext {
-    service: BaseEntityService;
+    service: BaseEntityService;    
     name: string;
     traceQuery?: boolean;
     queryFunction?: string;
     args?: any[];
+    queryProcessor?: "DotNet" | "JavaScript"
 }
 
 export default class Query<T> {
@@ -218,12 +219,12 @@ export default class Query<T> {
 
     public join<TInner, TKey>(model: IModel<TInner>, left: (x: T) => TKey, right: (x: TInner) => TKey)
         : Query<{ entity: T, inner: TInner }> {
-        return this.append(["join" as any, model.name, convertToLinq(left.toString()), convertToLinq(right.toString())] ) as any;
+        return this.append(["join" as any, model.name, this.convertToLinq(left.toString()), this.convertToLinq(right.toString())] ) as any;
     }
 
     public leftJoin<TInner, TKey>(model: IModel<TInner>, left: (x: T) => TKey, right: (x: TInner) => TKey)
     : Query<{ entity: T, inner: TInner }> {
-    return this.append(["leftJoin" as any, model.name, convertToLinq(left.toString()), convertToLinq(right.toString())] ) as any;
+    return this.append(["leftJoin" as any, model.name, this.convertToLinq(left.toString()), this.convertToLinq(right.toString())] ) as any;
 }
 
     public include<TR>(q: (x: T) => TR[]): IIncludedArrayQuery<T, TR, TR[]>;
@@ -235,7 +236,7 @@ export default class Query<T> {
                 ["include", tOrP],
                 ... q.map((s) => ["include", s] as IQueryMethod)) as any;
         }
-        const select = convertToLinq(tOrP.toString());
+        const select = this.convertToLinq(tOrP.toString());
         return this.append(["include", select] ) as any;
     }
 
@@ -377,7 +378,7 @@ export default class Query<T> {
     }
 
     protected thenInclude(a): any {
-        const select = convertToLinq(a.toString());
+        const select = this.convertToLinq(a.toString());
         return this.append(["thenInclude", select]);
     }
 
@@ -388,7 +389,7 @@ export default class Query<T> {
     private process<TP, TR>(name: any, tOrP: TP | T, q?: (p: TP) => (x: T) => TR): Query<T> {
 
         if (!q) {
-            const select = convertToLinq(tOrP.toString());
+            const select = this.convertToLinq(tOrP.toString());
             return this.append<T>([name , select]);
         }
 
@@ -405,8 +406,12 @@ export default class Query<T> {
                 pl.push(element);
             }
         }
-        text = convertToLinq(text);
+        text = this.convertToLinq(text);
         return this.append([name , text, ...pl]);
+    }
+
+    private convertToLinq(text: string) {
+        return this.context.queryProcessor === "DotNet" ? convertToLinq(text) : text;
     }
 
 }

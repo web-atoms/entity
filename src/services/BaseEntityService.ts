@@ -7,6 +7,7 @@ import HttpSession, { IHttpRequest } from "./HttpSession";
 import mergeProperties from "./mergeProperties";
 import Query, { IDateRange, IEntityWithDateRange, stepTypes } from "./Query";
 import resolve from "./resolve";
+import { QueryProcessor } from "./QueryProcessor";
 
 export interface IGeometry {
     latitude: number;
@@ -248,9 +249,11 @@ export class Model<T> implements IModel<T> {
     }
 }
 
-export default class BaseEntityService extends HttpSession {
+export default abstract class BaseEntityService extends HttpSession {
 
     public url: string = "/api/entity/";
+
+    public abstract queryProcessor: QueryProcessor;
 
     protected resultConverter = resolve;
 
@@ -282,6 +285,7 @@ export default class BaseEntityService extends HttpSession {
         return new Query({
             service: this,
             name: m.name,
+            queryProcessor: this.queryProcessor,
             queryFunction,
             args
         });
