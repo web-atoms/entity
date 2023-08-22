@@ -225,7 +225,11 @@ export interface IModel<T> {
 
 export class Model<T> implements IModel<T> {
     private defaults: [string, any][];
-    constructor(public name: string, defaults: any = null) {
+    constructor(
+        public name: string,
+        public readonly keys: string[] = [],
+        defaults: any = null
+    ) {
         if (defaults) {
             this.defaults = [];
             for (const key in defaults) {
@@ -236,6 +240,7 @@ export class Model<T> implements IModel<T> {
             }
         }
     }
+
     public create(properties: Omit<T, "$type"> = {} as any): T {
         (properties as any).$type = this.name;
         if (this.defaults) {
@@ -246,6 +251,21 @@ export class Model<T> implements IModel<T> {
             }
         }
         return properties as T;
+    }
+
+    public patch(original: Omit<T, "$type">, updates: Omit<T, "$type">) {
+        for (const iterator of this.keys) {
+            const originalKey = original[iterator];
+            const updatedKey = updates[iterator];
+            if (updatedKey && updatedKey !== originalKey) {
+                throw new Error(`Cannot update ${iterator} as it is the primary key`)
+            }
+            updates[iterator] = originalKey;
+        }
+        return {
+            $type: this.name,
+            ... updates
+        } as T;
     }
 }
 
