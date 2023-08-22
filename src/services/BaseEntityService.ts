@@ -1,7 +1,7 @@
 import { CancelToken, IDisposable } from "@web-atoms/core/dist/core/types";
 import DateTime from "@web-atoms/date-time/dist/DateTime";
 import { Cloner } from "../models/Cloner";
-import IClrEntity, { IClrExtendedEntity } from "../models/IClrEntity";
+import IClrEntity, { IClrEntityLike, IClrExtendedEntity } from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
 import HttpSession, { IHttpRequest } from "./HttpSession";
 import mergeProperties from "./mergeProperties";
@@ -220,7 +220,8 @@ export interface IPagedListParams extends IListParams {
 
 export interface IModel<T> {
     name: string;
-    create?(properties?: Omit<T, "$type">): T;
+    create?(properties?: IClrEntityLike<T>): T;
+    patch?(original: IClrEntityLike<T>, updates: IClrEntityLike<T>): T;
 }
 
 export class Model<T> implements IModel<T> {
@@ -241,7 +242,7 @@ export class Model<T> implements IModel<T> {
         }
     }
 
-    public create(properties: Omit<T, "$type"> = {} as any): T {
+    public create(properties: IClrEntityLike<T> = {} as any): T {
         (properties as any).$type = this.name;
         if (this.defaults) {
             for (const [key, value] of this.defaults) {
@@ -253,7 +254,7 @@ export class Model<T> implements IModel<T> {
         return properties as T;
     }
 
-    public patch(original: Omit<T, "$type">, updates: Omit<T, "$type">) {
+    public patch(original: IClrEntityLike<T>, updates: IClrEntityLike<T>) {
         for (const iterator of this.keys) {
             const originalKey = original[iterator];
             const updatedKey = updates[iterator];

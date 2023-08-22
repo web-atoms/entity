@@ -17,6 +17,8 @@ export default interface IClrEntity {
     $navigations?: INavigationProperties;
 }
 
+export type IClrEntityLike<T> = Omit<T, "$type">;
+
 export interface IClrExtendedEntity {
     [key: string]: any;
 }
