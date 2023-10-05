@@ -25,10 +25,6 @@ export default class TaskManager {
                 return;
             }
 
-            if (!this.waiting.size) {
-                return;
-            }
-
             const t = this.waiting.dequeue();
             if (!t) {
                 return;
