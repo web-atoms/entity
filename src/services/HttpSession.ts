@@ -1,5 +1,7 @@
 import { CancelToken } from "@web-atoms/core/dist/core/types";
 import JsonError from "@web-atoms/core/dist/services/http/JsonError";
+import Queue from "../models/Queue";
+import TaskManager from "../models/TaskManager";
 
 export type URIWithSearchParams = [string, {[k: string]: any}];
 
@@ -43,11 +45,21 @@ export interface IHttpRequest extends RequestInit {
     hideActivityIndicator?: boolean;
 }
 
-export default class HttpSession {
+export default class HttpSession extends TaskManager {
+
+    /**
+     * Allow maximum parallel fetch...
+     */
+    public rateLimit: number = 10;
+
 
     protected resultConverter = (e) => e;
 
-    protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
+    protected fetchJson<T>(options: IHttpRequest): Promise<T> {
+        return this.run(() => this.uncheckedFetchJson<T>(options));
+    }
+
+    protected async uncheckedFetchJson<T>(options: IHttpRequest): Promise<T> {
         if (options.cancelToken) {
             const ab = new AbortController();
             options.signal = ab.signal;
