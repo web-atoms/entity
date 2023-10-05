@@ -1,28 +1,34 @@
-const next = Symbol("nextInQueue");
 
 export default class Queue<T> {
 
-    head = null;
+    head = 0;
+    tail = 0;
+
+    store: Map<any,any> = new Map();
 
     peek() {
-        return this.head;
+        return this.store[this.tail];
     }
 
     public enqueue(item: T) {
-        if (this.head) {
-            this.head[next] = item;
-        }
-        this.head = item;
+        this.store[this.tail] = item;
+        this.tail++;
     }
 
     public dequeue() {
-        if (!this.head) {
+        const { head, tail } = this;
+        const size = tail - head;
+        if (size <= 0) {
             return void 0;
+        }            
+        const item = this.store[head];
+        this.store.delete(head);
+        this.head++;
+        if (this.head === this.tail) {
+            this.head = 0;
+            this.tail = 0;
         }
-        const { head } = this;
-        this.head = this.head[next];
-        delete head[next];
-        return head;
+        return item;
     }
 
 }
