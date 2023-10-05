@@ -46,14 +46,16 @@ export default class Queue<T> {
     }
 
     private resize(n: number) {
-        const old = this.store;
-        this.store = new Array(n);
         if (!this.length) {
+            // this will clear all existing items...
+            this.store.length = 0;
+            this.store.length = n;
             this.start = 0;
             return;
         }
         if (this.start > 0) {
-
+            const old = this.store;
+            this.store = new Array(n);
             const afterStart = Math.min(
                 this.start + this.length,
                 old.length - this.start
@@ -73,9 +75,7 @@ export default class Queue<T> {
             this.start = 0;
             return;
         }
-        if (this.length > 0) {
-            this.store.push(... old);
-        }
+        this.store.length = n;
     }
 
 }

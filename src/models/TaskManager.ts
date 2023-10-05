@@ -41,12 +41,12 @@ export default class TaskManager {
             fx().then(
                 (r) => {
                     this.running.delete(fx);
-                    setTimeout(this.processQueue, 1, this);
+                    setTimeout(() => this.processQueue(), 1);
                     resolve(r);
                 },
                 (e) => {
                     this.running.delete(fx);
-                    setTimeout(this.processQueue, 1, this);
+                    setTimeout(() => this.processQueue(), 1);
                     reject(e);
                 }
             );
