@@ -208,6 +208,11 @@ export interface IListParams {
     cacheVersion?: string;
 
     /**
+     * True if cacheSeconds is greater than zero, set false to turn it off
+     */
+    cacheImmutable?: boolean;
+
+    /**
      * Split server side includes
      */
     splitInclude?: boolean;

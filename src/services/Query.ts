@@ -312,6 +312,7 @@ export default class Query<T> {
             hideActivityIndicator,
             splitInclude = false,
             cacheSeconds = 0,
+            cacheImmutable = cacheSeconds > 0,
             count = true
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         let url;
@@ -366,6 +367,9 @@ export default class Query<T> {
         if (cacheSeconds > 0) {
             fm.append("cache", cacheSeconds.toString());
             fm.append("cv", cacheVersion);
+            if(!cacheImmutable) {
+                fm.append("cacheImmutable", "false");
+            }
         } else {
         }
         url  = `${service.url}query/${name}?${fm.toString()}`;
