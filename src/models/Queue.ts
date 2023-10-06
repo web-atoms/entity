@@ -7,7 +7,7 @@ export default class Queue<T> {
     store: Map<any,any> = new Map();
 
     peek() {
-        return this.store[this.tail];
+        return this.store[this.head];
     }
 
     public enqueue(item: T) {
