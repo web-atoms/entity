@@ -11,7 +11,7 @@ export default class Queue<T> {
     }
 
     public enqueue(item: T) {
-        this.store[this.tail] = item;
+        this.store.set(this.tail, item);
         this.tail++;
     }
 
@@ -21,7 +21,7 @@ export default class Queue<T> {
         if (size <= 0) {
             return void 0;
         }            
-        const item = this.store[head];
+        const item = this.store.get(head);
         this.store.delete(head);
         this.head++;
         if (this.head === this.tail) {
