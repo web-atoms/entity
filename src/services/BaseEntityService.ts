@@ -229,6 +229,10 @@ export interface IModel<T> {
     patch?(original: IClrEntityLike<T>, updates: IClrEntityLike<T>): T;
 }
 
+export class DefaultFactory {
+    constructor(public readonly factory: () => any) {}
+}
+
 export class Model<T> implements IModel<T> {
     private defaults: [string, any][];
     constructor(
@@ -252,7 +256,11 @@ export class Model<T> implements IModel<T> {
         if (this.defaults) {
             for (const [key, value] of this.defaults) {
                 if (properties[key] === void 0) {
-                    properties[key] = value;
+                    if (value instanceof DefaultFactory) {
+                        properties[key] = value.factory();
+                    } else {
+                        properties[key] = value;
+                    }
                 }
             }
         }
