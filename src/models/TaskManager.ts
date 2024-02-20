@@ -14,6 +14,10 @@ export default class TaskManager {
             this.waiting.enqueue({ resolve, reject, fx });
         });
 
+        // this is to prevent uncaught promise error.
+        // eslint-disable-next-line no-console
+        pr.catch((error) => console.error(error));
+
         this.processQueue();
 
         return pr as Promise<TR>;
