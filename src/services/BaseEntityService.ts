@@ -335,13 +335,20 @@ export default abstract class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public save<T extends IClrEntity>(body: T): Promise<T>;
+    public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>): Promise<T>;
     public save<T extends IClrEntity>(body: T[]): Promise<T[]>;
-    public async save(body: any): Promise<any> {
+    public async save(body: any, cloner?: (c: Cloner<any>) => Cloner<any>): Promise<any> {
         if (Array.isArray(body) && body.length === 0) {
             return body;
         }
         const url = this.url;
+        if (body instanceof Cloner) {
+            body = body.copy;
+        }
+        if (cloner) {
+            const c = cloner(new Cloner(body));
+            body = c.copy;
+        }
         const result = await this.postJson({url, body});
         mergeProperties(result, body);
         return body;
