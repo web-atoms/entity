@@ -346,8 +346,12 @@ export default abstract class BaseEntityService extends HttpSession {
             body = body.copy;
         }
         if (cloner) {
-            const c = cloner(new Cloner(body));
-            body = c.copy;
+            if (Array.isArray(body)) {
+                body = body.map((x) => cloner(new Cloner(body)).copy);
+            } else {
+                const c = cloner(new Cloner(body));
+                body = c.copy;
+            }
         }
         const result = await this.postJson({url, body});
         mergeProperties(result, body);
