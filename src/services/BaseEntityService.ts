@@ -336,7 +336,7 @@ export default abstract class BaseEntityService extends HttpSession {
     }
 
     public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>): Promise<T>;
-    public save<T extends IClrEntity>(body: T[]): Promise<T[]>;
+    public save<T extends IClrEntity>(body: T[], cloner?: (c: Cloner<T>) => Cloner<T>): Promise<T[]>;
     public async save(body: any, cloner?: (c: Cloner<any>) => Cloner<any>): Promise<any> {
         if (Array.isArray(body) && body.length === 0) {
             return body;
