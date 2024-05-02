@@ -347,7 +347,7 @@ export default abstract class BaseEntityService extends HttpSession {
         }
         if (cloner) {
             if (Array.isArray(body)) {
-                body = body.map((x) => cloner(new Cloner(body)).copy);
+                body = body.map((x) => cloner(new Cloner(x)).copy);
             } else {
                 const c = cloner(new Cloner(body));
                 body = c.copy;
