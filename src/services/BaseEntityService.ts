@@ -335,15 +335,23 @@ export default abstract class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>): Promise<T>;
-    public save<T extends IClrEntity>(body: T[], cloner?: (c: Cloner<T>) => Cloner<T>): Promise<T[]>;
-    public async save(body: any, cloner?: (c: Cloner<any>) => Cloner<any>): Promise<any> {
+    public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T>;
+    public save<T extends IClrEntity>(body: T[], cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T[]>;
+    public async save(body: any, cloner?: (c: Cloner<any>) => Cloner<any>, trace?: boolean): Promise<any> {
         if (Array.isArray(body) && body.length === 0) {
             return body;
         }
-        const url = this.url;
+        let url = this.url;
         if (body instanceof Cloner) {
             body = body.copy;
+        }
+        if (trace) {
+            const hasQuery = url.includes("?");
+            if (hasQuery) {
+                url = url += "&trace=true";
+            } else {
+                url = url += "?trace=true";
+            }
         }
         if (cloner) {
             if (Array.isArray(body)) {
@@ -353,7 +361,9 @@ export default abstract class BaseEntityService extends HttpSession {
                 body = c.copy;
             }
         }
-        const result = await this.postJson({url, body});
+        const result = await this.postJson({
+            url, body
+        });
         mergeProperties(result, body);
         return body;
     }
