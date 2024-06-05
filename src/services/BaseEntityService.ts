@@ -223,10 +223,35 @@ export interface IPagedListParams extends IListParams {
     count?: boolean;
 }
 
+export interface IColumn {
+    name?: string;
+    type?: string;
+    generated?: string;
+    default?: any;
+}
+
+export interface IRelation {
+    name?: string;
+    fkName?: string;
+    relatedName?: string;
+    isCollection?: boolean;
+    isInverse?: boolean;
+
+    relatedModel?: IModel<any>;
+}
+
+export interface IModelSchema {
+    name: string;
+    keys: IColumn[];
+    properties: IColumn[];
+    relations: IRelation[];
+}
+
 export interface IModel<T> {
     name: string;
     create?(properties?: IClrEntityLike<T>): T;
     patch?(original: IClrEntityLike<T>, updates: IClrEntityLike<T>): T;
+    schema: IModelSchema;
 }
 
 export class DefaultFactory {
@@ -238,7 +263,8 @@ export class Model<T> implements IModel<T> {
     constructor(
         public name: string,
         public readonly keys: string[] = [],
-        defaults: any = null
+        defaults: any = null,
+        public schema = null as IModelSchema
     ) {
         if (defaults) {
             this.defaults = [];
