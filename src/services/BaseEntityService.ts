@@ -251,7 +251,7 @@ export interface IModel<T> {
     name: string;
     create?(properties?: IClrEntityLike<T>): T;
     patch?(original: IClrEntityLike<T>, updates: IClrEntityLike<T>): T;
-    schema: IModelSchema;
+    schema?: IModelSchema;
 }
 
 export class DefaultFactory {
