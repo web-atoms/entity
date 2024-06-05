@@ -232,7 +232,7 @@ export interface IColumn {
 
 export interface IRelation {
     name?: string;
-    fkName?: string;
+    fkMap?: { fk: string, relatedKey: string }[];
     relatedName?: string;
     isCollection?: boolean;
     isInverse?: boolean;
