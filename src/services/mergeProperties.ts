@@ -121,6 +121,10 @@ export default function mergeProperties(
                 mergeProperties(srcElement, targetElement, path + "." + key, visited, merged);
                 continue;
             }
+            if (targetElement === void 0 && srcElement) {
+                target[key] = srcElement;
+                continue;
+            }
             target[key] = targetElement;
             if (cloneTarget && targetElement !== void 0) {
                 cloneTarget[key] = targetElement;
