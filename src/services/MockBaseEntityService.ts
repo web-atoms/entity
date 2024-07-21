@@ -6,7 +6,7 @@ import BaseEntityService, { IBulkDeleteModel, IBulkUpdateModel, IModel, IQueryMe
 import Query from "./Query";
 import { QueryProcessor } from "./QueryProcessor";
 
-const replacer = /(\.[a-z0-9\_])|([a-z0-9\_]\())/ig;
+const replacer = /(\.[a-z0-9\_])|([a-z0-9\_]\(\))/ig;
 
 const convertToSafe = (text: string) => {
     return text.replace(replacer, (x) => {
