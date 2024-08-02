@@ -363,7 +363,14 @@ export default abstract class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA,entity: IClrEntity, ... args: any[]) {
+    public invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, ... args: any[]) {
+        // will send keys only...
+        const entity = {
+            $type: m.name
+        };
+        for(const key of m.schema.keys) {
+            entity[key.name] = argEntity[key.name];
+        }
         return this.postJson({
             url: `${this.url}invoke/${entity.$type}/${method as any}`,
             method: "POST",
