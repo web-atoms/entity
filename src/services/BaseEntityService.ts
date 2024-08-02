@@ -310,6 +310,10 @@ export class Model<T> implements IModel<T> {
     }
 }
 
+type InferSchemaMethod<T> = T extends IModel<T>
+    ? keyof IModel<T>["schema"]["methods"]
+    : never;
+
 export default abstract class BaseEntityService extends HttpSession {
 
     public url: string = "/api/entity/";
@@ -341,7 +345,7 @@ export default abstract class BaseEntityService extends HttpSession {
     }
 
     public query<T extends IClrEntity>(m: IModel<T>,
-            queryFunction?: keyof IModel<T>["schema"]["methods"],
+            queryFunction?: InferSchemaMethod<IModel<T>>,
             ... args: any[]): Query<T> {
         return new Query({
             service: this,
@@ -362,7 +366,7 @@ export default abstract class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public invoke<T extends IClrEntity>(m: IModel<T>, method: keyof IModel<T>["schema"]["methods"],entity: IClrEntity, ... args: any[]) {
+    public invoke<T extends IClrEntity>(m: IModel<T>, method: InferSchemaMethod<IModel<T>>,entity: IClrEntity, ... args: any[]) {
         return this.postJson({
             url: `${this.url}invoke/${entity.$type}/${method}`,
             method: "POST",
