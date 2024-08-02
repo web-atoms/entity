@@ -341,7 +341,7 @@ export default abstract class BaseEntityService extends HttpSession {
     }
 
     public query<T extends IClrEntity>(m: IModel<T>,
-            queryFunction?: IModel<T>["schema"]["methods"][number],
+            queryFunction?: IModel<T>["schema"]["methods"][string],
             ... args: any[]): Query<T> {
         return new Query({
             service: this,
