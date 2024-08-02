@@ -245,7 +245,8 @@ export interface IModelSchema {
     keys: IColumn[];
     properties: IColumn[];
     relations: IRelation[];
-    methods?: { [key: string]: any };
+    queries?: { [key: string]: any };
+    actions?: { [key: string]: any };
 }
 
 export interface IModel<T, TQ = any, TA = any> {
