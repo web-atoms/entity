@@ -364,7 +364,7 @@ export default abstract class BaseEntityService extends HttpSession {
 
     public invoke<T extends IClrEntity>(m: IModel<T>, method: IModel<T>["schema"]["methods"][number],entity: IClrEntity, ... args: any[]) {
         return this.postJson({
-            url: `${this.url}invoke/${entity.$type}/${name}`,
+            url: `${this.url}invoke/${entity.$type}/${method}`,
             method: "POST",
             body: {
                 entity,
