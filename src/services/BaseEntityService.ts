@@ -248,7 +248,7 @@ export interface IModelSchema {
     methods?: { [key: string]: any };
 }
 
-export interface IModel<T> {
+export interface IModel<T, TM = any> {
     name: string;
     create?(properties?: IClrEntityLike<T>): T;
     patch?(original: IClrEntityLike<T>, updates: IClrEntityLike<T>): T;
@@ -344,8 +344,8 @@ export default abstract class BaseEntityService extends HttpSession {
             ]);
     }
 
-    public query<T extends IClrEntity>(m: IModel<T>,
-            queryFunction?: InferSchemaMethod<IModel<T>>,
+    public query<T extends IClrEntity, TR>(m: IModel<T, TR>,
+            queryFunction?: keyof TR,
             ... args: any[]): Query<T> {
         return new Query({
             service: this,
@@ -366,9 +366,9 @@ export default abstract class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public invoke<T extends IClrEntity>(m: IModel<T>, method: InferSchemaMethod<IModel<T>>,entity: IClrEntity, ... args: any[]) {
+    public invoke<T extends IClrEntity, TR>(m: IModel<T, TR>, method: keyof TR,entity: IClrEntity, ... args: any[]) {
         return this.postJson({
-            url: `${this.url}invoke/${entity.$type}/${method}`,
+            url: `${this.url}invoke/${entity.$type}/${method as any}`,
             method: "POST",
             body: {
                 entity,
