@@ -15,7 +15,7 @@ const m1: IModel<IItem> = new Model<IItem>(
         name: "n1",
         properties: [ { name: "desc"}],
         relations: [],
-        methods: {
+        queries: {
             run: "run"
         }
     }
