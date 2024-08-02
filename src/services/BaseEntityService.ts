@@ -341,13 +341,13 @@ export default abstract class BaseEntityService extends HttpSession {
     }
 
     public query<T extends IClrEntity>(m: IModel<T>,
-            queryFunction?: IModel<T>["schema"]["methods"][string],
+            queryFunction?: keyof IModel<T>["schema"]["methods"],
             ... args: any[]): Query<T> {
         return new Query({
             service: this,
             name: m.name,
             queryProcessor: this.queryProcessor,
-            queryFunction,
+            queryFunction: queryFunction as any,
             args
         });
     }
@@ -362,7 +362,7 @@ export default abstract class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public invoke<T extends IClrEntity>(m: IModel<T>, method: IModel<T>["schema"]["methods"][string],entity: IClrEntity, ... args: any[]) {
+    public invoke<T extends IClrEntity>(m: IModel<T>, method: keyof IModel<T>["schema"]["methods"],entity: IClrEntity, ... args: any[]) {
         return this.postJson({
             url: `${this.url}invoke/${entity.$type}/${method}`,
             method: "POST",
