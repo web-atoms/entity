@@ -245,6 +245,7 @@ export interface IModelSchema {
     keys: IColumn[];
     properties: IColumn[];
     relations: IRelation[];
+    readonly methods?: string[];
 }
 
 export interface IModel<T> {
@@ -340,7 +341,7 @@ export default abstract class BaseEntityService extends HttpSession {
     }
 
     public query<T extends IClrEntity>(m: IModel<T>,
-            queryFunction?: string,
+            queryFunction?: IModel<T>["schema"]["methods"][number],
             ... args: any[]): Query<T> {
         return new Query({
             service: this,
@@ -359,6 +360,17 @@ export default abstract class BaseEntityService extends HttpSession {
     public insert(body: IClrEntity): Promise<IClrEntity> {
         const url = this.url;
         return this.putJson({url, body});
+    }
+
+    public invoke<T extends IClrEntity>(m: IModel<T>, method: IModel<T>["schema"]["methods"][number],entity: IClrEntity, ... args: any[]) {
+        return this.postJson({
+            url: `${this.url}invoke/${entity.$type}/${name}`,
+            method: "POST",
+            body: {
+                entity,
+                args
+            }
+        });
     }
 
     public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T>;
