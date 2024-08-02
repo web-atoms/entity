@@ -248,7 +248,7 @@ export interface IModelSchema {
     methods?: { [key: string]: any };
 }
 
-export interface IModel<T, TM = any> {
+export interface IModel<T, TQ = any, TA = any> {
     name: string;
     create?(properties?: IClrEntityLike<T>): T;
     patch?(original: IClrEntityLike<T>, updates: IClrEntityLike<T>): T;
@@ -310,10 +310,6 @@ export class Model<T> implements IModel<T> {
     }
 }
 
-type InferSchemaMethod<T> = T extends IModel<T>
-    ? keyof IModel<T>["schema"]["methods"]
-    : never;
-
 export default abstract class BaseEntityService extends HttpSession {
 
     public url: string = "/api/entity/";
@@ -366,7 +362,7 @@ export default abstract class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public invoke<T extends IClrEntity, TR>(m: IModel<T, TR>, method: keyof TR,entity: IClrEntity, ... args: any[]) {
+    public invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA,entity: IClrEntity, ... args: any[]) {
         return this.postJson({
             url: `${this.url}invoke/${entity.$type}/${method as any}`,
             method: "POST",
