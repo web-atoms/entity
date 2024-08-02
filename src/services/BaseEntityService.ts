@@ -245,7 +245,7 @@ export interface IModelSchema {
     keys: IColumn[];
     properties: IColumn[];
     relations: IRelation[];
-    readonly methods?: string[];
+    methods?: { [key: string]: any };
 }
 
 export interface IModel<T> {
@@ -362,7 +362,7 @@ export default abstract class BaseEntityService extends HttpSession {
         return this.putJson({url, body});
     }
 
-    public invoke<T extends IClrEntity>(m: IModel<T>, method: IModel<T>["schema"]["methods"][number],entity: IClrEntity, ... args: any[]) {
+    public invoke<T extends IClrEntity>(m: IModel<T>, method: IModel<T>["schema"]["methods"][string],entity: IClrEntity, ... args: any[]) {
         return this.postJson({
             url: `${this.url}invoke/${entity.$type}/${method}`,
             method: "POST",
