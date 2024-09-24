@@ -226,6 +226,8 @@ export interface IPagedListParams extends IListParams {
 export interface IColumn {
     name?: string;
     type?: string;
+    length?: number;
+    dataType?: string;
     generated?: string;
     default?: any;
 }
