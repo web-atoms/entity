@@ -71,44 +71,9 @@ export interface ICollection<T> extends Array<T> {
 }
 
 const ArrayPrototype = Array.prototype as any;
-ArrayPrototype.where = ArrayPrototype.filter;
-ArrayPrototype.any = ArrayPrototype.some;
-ArrayPrototype.select = ArrayPrototype.map;
-ArrayPrototype.selectMany = function(x) {
-    const r = [];
-    for (const iterator of this) {
-        const items = x(iterator);
-        if (Array.isArray(items)) {
-            r.push(... items);
-        }
-    }
-    return r;
-};
-ArrayPrototype.firstOrDefault = function(f) {
-    if (f) {
-        return ArrayPrototype.find.apply(this, arguments);
-    }
-    return this[0];
-};
-ArrayPrototype.sum = function(f) {
-    let n = 0;
-    for (const iterator of this) {
-        n += f(iterator) ?? 0;
-    }
-    return n;
-};
-ArrayPrototype.average = function(f) {
-    if (this.length === 0) {
-        return 0;
-    }
-    let n = 0;
-    for (const iterator of this) {
-        n += f(iterator) ?? 0;
-    }
-    return n / this.length;
-};
-ArrayPrototype.orderBy = function(f) {
-    return this.sort((a, b) => {
+
+const orderBy = function (f) {
+    return [].concat(this).sort((a, b) => {
         const ak = f(a);
         const bk = f(b);
         if (typeof ak === "string") {
@@ -117,9 +82,9 @@ ArrayPrototype.orderBy = function(f) {
         return ak - bk;
     });
 };
-ArrayPrototype.thenBy = ArrayPrototype.orderBy;
-ArrayPrototype.orderByDescending = function(f) {
-    return this.sort((a, b) => {
+
+const orderByDescending = function (f) {
+    return [].concat(this).sort((a, b) => {
         const ak = f(a);
         const bk = f(b);
         if (typeof ak === "string") {
@@ -128,19 +93,109 @@ ArrayPrototype.orderByDescending = function(f) {
         return bk - ak;
     });
 };
-ArrayPrototype.thenByDescending = ArrayPrototype.orderByDescending;
-ArrayPrototype.count = function(f) {
-    if (!f) {
-        return this.length;
+
+Object.defineProperties(ArrayPrototype, {
+    where: {
+        enumerable: false,
+        value: ArrayPrototype.filter,
+        configurable: true
+    },
+    any: {
+        enumerable: false,
+        value: ArrayPrototype.some,
+        configurable: true
+    },
+    select: {
+        enumerable: false,
+        value: ArrayPrototype.map,
+        configurable: true
+    },
+    selectMany: {
+        enumerable: false,
+        value(x) {
+            const r = [];
+            for (const iterator of this) {
+                const items = x(iterator);
+                if (Array.isArray(items)) {
+                    r.push(... items);
+                }
+            }
+            return r;        
+        },
+        configurable: true
+    },
+    firstOrDefault: {
+        enumerable: false,
+        value(f) {
+            if (f) {
+                return ArrayPrototype.find.apply(this, arguments);
+            }
+            return this[0];        
+        },
+        configurable: true
+    },
+    sum: {
+        enumerable: false,
+        value(f) {
+            let n = 0;
+            for (const iterator of this) {
+                n += f(iterator) ?? 0;
+            }
+            return n;        
+        },
+        configurable: true
+    },
+    average: {
+        enumerable: false,
+        value(f) {
+            if (this.length === 0) {
+                return 0;
+            }
+            let n = 0;
+            for (const iterator of this) {
+                n += f(iterator) ?? 0;
+            }
+            return n / this.length;        
+        },
+        configurable: true
+    },
+    orderBy: {
+        enumerable: false,
+        value: orderBy,
+        configurable: true
+    },
+    thenBy: {
+        enumerable: false,
+        value: orderBy,        configurable: false
+    },
+    orderByDescending: {
+        enumerable: false,
+        value: orderByDescending,
+        configurable: true
+    },
+    thenByDescending: {
+        enumerable: false,
+        value: orderByDescending,
+        configurable: false
+    },
+    count: {
+        enumerable: false,
+        value(f) {
+            if (!f) {
+                return this.length;
+            }
+            let length = 0;
+            for (const iterator of this) {
+                if (f(iterator)) {
+                    length++;
+                }
+            }
+            return length;        
+        },
+        configurable: false
     }
-    let length = 0;
-    for (const iterator of this) {
-        if (f(iterator)) {
-            length++;
-        }
-    }
-    return length;
-};
+
+});
 
 export interface IMethod {
     select?: [string, ... any[]];
