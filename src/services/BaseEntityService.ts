@@ -435,7 +435,7 @@ export default abstract class BaseEntityService extends HttpSession {
                 entity,
                 args
             }
-        });
+        }) as Promise<T>;
     }
 
     public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T>;
