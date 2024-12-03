@@ -1,5 +1,7 @@
 import Queue from "./Queue";
 
+const sleep = (n) => new Promise((r) => setTimeout(r, n));
+
 export default class TaskManager {
 
     public rateLimit = 10;
@@ -52,6 +54,29 @@ export default class TaskManager {
             );
 
         }
+    }
+
+    /**
+     * You can queue this function that will be
+     * executed after all pending fetch tasks
+     * are finished
+     * @param fx any function
+     */
+    public runAfterEnd(fx: () => any) {
+        (async () => {
+            for(;;) {
+                await sleep(100);
+                if (this.running.size > 0) {
+                    continue;
+                }
+                await sleep(10);
+                if (this.running.size > 0) {
+                    continue;
+                }
+                break;
+            }
+            fx();
+        })().catch(console.error);
     }
 
 }
