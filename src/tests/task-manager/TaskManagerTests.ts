@@ -8,7 +8,7 @@ const sleep = (n) => new Promise((r) => setTimeout(r, n));
 export class TestTaskManager extends TaskManager {
 
     public sleep(fx: () => any) {
-        return this.run(async () => {
+        return this.queueRun(async () => {
             fx();
             await sleep(100);    
         })

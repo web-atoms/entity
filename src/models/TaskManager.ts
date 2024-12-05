@@ -10,7 +10,7 @@ export default class TaskManager {
 
     private waiting: Queue<{ resolve, reject, fx }> = new Queue();
 
-    protected run<TR>(fx: (... a: any[]) => Promise<TR>): Promise<TR> {
+    protected queueRun<TR>(fx: (... a: any[]) => Promise<TR>): Promise<TR> {
 
         const pr = new Promise((resolve, reject) => {
             this.waiting.enqueue({ resolve, reject, fx });

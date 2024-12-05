@@ -56,7 +56,7 @@ export default class HttpSession extends TaskManager {
     protected resultConverter = (e) => e;
 
     protected fetchJson<T>(options: IHttpRequest): Promise<T> {
-        return this.run(() => this.uncheckedFetchJson<T>(options));
+        return this.queueRun(() => this.uncheckedFetchJson<T>(options));
     }
 
     protected async uncheckedFetchJson<T>(options: IHttpRequest): Promise<T> {

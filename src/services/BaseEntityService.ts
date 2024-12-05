@@ -443,6 +443,36 @@ export default abstract class BaseEntityService extends HttpSession {
         }) as Promise<T>;
     }
 
+    
+    public run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
+        args = void 0 as any[],
+        cacheSeconds = 0,
+        cacheVersion = void 0 as any,
+        cancelToken = void 0 as CancelToken
+    } = {
+    }) {
+        // will send keys only...
+        const { $type, $key } = argEntity;
+        if (!$key) {
+            throw new Error(`Run requires encrypted $key`);
+        }
+        const usp = new URLSearchParams();
+        usp.append("key", $key);
+        if (args) {
+            usp.append("args", JSON.stringify(args));
+        }
+        if (cacheSeconds) {
+            usp.append("cache", cacheSeconds.toString());
+        }
+        if (cacheVersion) {
+            usp.append("cv", cacheVersion);
+        }
+        return this.getJson({
+            url: `${this.url}run/${$type}/${method as any}?${usp.toString()}`,
+            cancelToken,
+        }) as Promise<T>;
+    }
+
     public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T>;
     public save<T extends IClrEntity>(body: T[], cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T[]>;
     public async save(body: any, cloner?: (c: Cloner<any>) => Cloner<any>, trace?: boolean): Promise<any> {
