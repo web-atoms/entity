@@ -21,7 +21,8 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@web-atoms/unit-test": "^1.0.8"
+    "@web-atoms/unit-test": "^1.0.8",
+    "tslib": "^2.4.1"
   },
   "bugs": {
     "url": "https://github.com/web-atoms/entity/issues"
