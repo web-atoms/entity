@@ -43,6 +43,7 @@ export interface IHttpRequest extends RequestInit {
     body?: any;
     cancelToken?: CancelToken;
     hideActivityIndicator?: boolean;
+    asJson?: boolean;
 }
 
 export default class HttpSession extends TaskManager {
@@ -55,7 +56,7 @@ export default class HttpSession extends TaskManager {
 
     protected resultConverter = (e) => e;
 
-    protected fetchJson<T>(options: IHttpRequest): Promise<T> {
+    protected fetchResponse<T>(options: IHttpRequest): Promise<T> {
         return this.queueRun(() => this.uncheckedFetchJson<T>(options));
     }
 
@@ -93,7 +94,10 @@ export default class HttpSession extends TaskManager {
             // throw new Error(`Unable to convert to json\r\n${contentType}\r\n${await response.text()}`);
             throw new Error(`Unable to convert to json\r\n${contentType}}`);
         }
-        return this.resultConverter(await response.json());
+        const asJson = options.asJson ?? true;
+        if(asJson) {
+            return this.resultConverter(await response.json());
+        }
     }
 
     protected interceptFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
@@ -102,7 +106,7 @@ export default class HttpSession extends TaskManager {
 
     protected getJson<T>(options: IHttpRequest) {
         options.method = "GET";
-        return this.fetchJson<T>(options);
+        return this.fetchResponse<T>(options);
     }
 
     protected postFormModel<T>(options: IHttpRequest) {
@@ -112,7 +116,7 @@ export default class HttpSession extends TaskManager {
         }
         options.headers ??= {};
         options.headers["content-type"] = "application/x-www-form-urlencoded";
-        return this.fetchJson<T>(options);
+        return this.fetchResponse<T>(options);
     }
 
     protected postJson<T>(options: IHttpRequest) {
@@ -122,7 +126,7 @@ export default class HttpSession extends TaskManager {
         }
         options.headers ??= {};
         options.headers["content-type"] = "application/json";
-        return this.fetchJson<T>(options);
+        return this.fetchResponse<T>(options);
     }
 
     protected deleteJson<T>(options: IHttpRequest) {
@@ -132,7 +136,7 @@ export default class HttpSession extends TaskManager {
         }
         options.headers ??= {};
         options.headers["content-type"] = "application/json";
-        return this.fetchJson<T>(options);
+        return this.fetchResponse<T>(options);
     }
 
     protected putJson<T>(options: IHttpRequest) {
@@ -142,7 +146,7 @@ export default class HttpSession extends TaskManager {
         }
         options.headers ??= {};
         options.headers["content-type"] = "application/json";
-        return this.fetchJson<T>(options);
+        return this.fetchResponse<T>(options);
     }
 
 }

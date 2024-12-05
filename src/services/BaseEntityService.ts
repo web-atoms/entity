@@ -1,14 +1,17 @@
-import { CancelToken, IDisposable } from "@web-atoms/core/dist/core/types";
+import { CancelToken } from "@web-atoms/core/dist/core/types";
 import DateTime from "@web-atoms/date-time/dist/DateTime";
 import { Cloner } from "../models/Cloner";
-import IClrEntity, { IClrEntityLike, IClrExtendedEntity } from "../models/IClrEntity";
+import IClrEntity, { IClrEntityLike } from "../models/IClrEntity";
 import IEntityModel, { EntityContext } from "../models/IEntityModel";
-import HttpSession, { IHttpRequest } from "./HttpSession";
 import mergeProperties from "./mergeProperties";
 import Query, { IDateRange, IEntityWithDateRange, stepTypes } from "./Query";
 import resolve from "./resolve";
 import { QueryProcessor } from "./QueryProcessor";
+import TaskManager from "../models/TaskManager";
+import FetchBuilder from "@web-atoms/core/dist/services/FetchBuilder";
 
+(Symbol as any).asyncDispose ??= Symbol("asyncDispose");
+(Symbol as any).dispose ??= Symbol("dispose");
 export interface IGeometry {
     latitude: number;
     longitude: number;
@@ -373,7 +376,7 @@ export class Model<T> implements IModel<T> {
     }
 }
 
-export default abstract class BaseEntityService extends HttpSession {
+export default abstract class BaseEntityService extends TaskManager {
 
     public url: string = "/api/entity/";
 
@@ -391,7 +394,9 @@ export default abstract class BaseEntityService extends HttpSession {
         if (this.entityModel) {
             return this.entityModel;
         }
-        const c = await this.getJson<IEntityModel[]>({ url: `${this.url}model` });
+        using busy = this.createBusyIndicator(false);
+        const c = await FetchBuilder.get(`${this.url}model`)
+            .asJson<IEntityModel[]>();
         this.entityModel = new EntityContext(c);
         return this.entityModel;
     }
@@ -403,7 +408,7 @@ export default abstract class BaseEntityService extends HttpSession {
             ]);
     }
 
-    public query<T extends IClrEntity, TR>(m: IModel<T, TR>,
+    query<T extends IClrEntity, TR>(m: IModel<T, TR>,
             queryFunction?: keyof TR,
             ... args: any[]): Query<T> {
         return new Query({
@@ -415,17 +420,23 @@ export default abstract class BaseEntityService extends HttpSession {
         });
     }
 
-    public delete<T extends IClrEntity>(body: T): Promise<void> {
+    async delete<T extends IClrEntity>(body: T): Promise<void> {
+        using busy = this.createBusyIndicator(false);
         const url = this.url;
-        return this.deleteJson({url, body});
+        // return this.deleteJson({url, body});
+        return await FetchBuilder.delete(url).jsonBody(body).asJson();
     }
 
-    public insert(body: IClrEntity): Promise<IClrEntity> {
+    async insert(body: IClrEntity): Promise<IClrEntity> {
+        using busy = this.createBusyIndicator(false);
         const url = this.url;
-        return this.putJson({url, body});
+        // return this.putJson({url, body});
+        const result = await FetchBuilder.put(url).jsonBody(body).asJson();
+        return this.resultConverter(result);
     }
 
-    public invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, ... args: any[]) {
+    async invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, ... args: any[]) {
+        using busy = this.createBusyIndicator(false);
         // will send keys only...
         const entity = {
             $type: m.name
@@ -433,25 +444,29 @@ export default abstract class BaseEntityService extends HttpSession {
         for(const key of m.schema.keys) {
             entity[key.name] = argEntity[key.name];
         }
-        return this.postJson({
-            url: `${this.url}invoke/${entity.$type}/${method as any}`,
-            method: "POST",
-            body: {
-                entity,
-                args
-            }
-        }) as Promise<T>;
+
+        const result = await FetchBuilder.post(`${this.url}invoke/${entity.$type}/${method as any}`)
+            .jsonBody({ entity, args })
+            .asJson<T>();
+
+        return this.resultConverter(result);
+
+        // return this.postJson({
+        //     url: `${this.url}invoke/${entity.$type}/${method as any}`,
+        //     method: "POST",
+        //     body: {
+        //         entity,
+        //         args
+        //     }
+        // }) as Promise<T>;
     }
 
-    
-    public run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
+    buildRunUrl<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
         args = void 0 as any[],
         cacheSeconds = 0,
-        cacheVersion = void 0 as any,
-        cancelToken = void 0 as CancelToken
+        cacheVersion = void 0 as any
     } = {
     }) {
-        // will send keys only...
         const { $type, $key } = argEntity;
         if (!$key) {
             throw new Error(`Run requires encrypted $key`);
@@ -467,11 +482,53 @@ export default abstract class BaseEntityService extends HttpSession {
         if (cacheVersion) {
             usp.append("cv", cacheVersion);
         }
-        return this.getJson({
-            url: `${this.url}run/${$type}/${method as any}?${usp.toString()}`,
-            cancelToken,
-        }) as Promise<T>;
+        return `${this.url}run/${$type}/${method as any}?${usp.toString()}`;
     }
+    
+    async runAsText<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
+        args = void 0 as any[],
+        cacheSeconds = 0,
+        cacheVersion = void 0 as any,
+        cancelToken = void 0 as CancelToken
+    } = {
+    }) {
+        using busy = this.createBusyIndicator(false);
+        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion});
+        return await FetchBuilder.get(url)
+            .cancelToken(cancelToken)
+            .asText();
+    }
+
+    async runAsBlob<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
+        args = void 0 as any[],
+        cacheSeconds = 0,
+        cacheVersion = void 0 as any,
+        cancelToken = void 0 as CancelToken
+    } = {
+    }) {
+        using busy = this.createBusyIndicator(false);
+        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion});
+        return await FetchBuilder.get(url)
+            .cancelToken(cancelToken)
+            .asBlob();
+    }
+
+    async run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
+        args = void 0 as any[],
+        cacheSeconds = 0,
+        cacheVersion = void 0 as any,
+        cancelToken = void 0 as CancelToken
+    } = {
+    }) {
+        using busy = this.createBusyIndicator(false);
+        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion});
+        let result = await FetchBuilder.get(url)
+            .cancelToken(cancelToken)
+            .asJson();
+        result = this.resultConverter(result);
+        return result as any;
+    }
+
 
     public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T>;
     public save<T extends IClrEntity>(body: T[], cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T[]>;
@@ -479,6 +536,7 @@ export default abstract class BaseEntityService extends HttpSession {
         if (Array.isArray(body) && body.length === 0) {
             return body;
         }
+        using busy = this.createBusyIndicator(false);
         let url = this.url;
         if (body instanceof Cloner) {
             body = body.copy;
@@ -499,9 +557,13 @@ export default abstract class BaseEntityService extends HttpSession {
                 body = c.copy;
             }
         }
-        const result = await this.postJson({
-            url, body
-        });
+        // const result = await this.postJson({
+        //     url, body
+        // });
+        let result = await FetchBuilder.post(url)
+            .jsonBody(body)
+            .asJson();
+        result = this.resultConverter(result);
         mergeProperties(result, body);
         return body;
     }
@@ -522,6 +584,7 @@ export default abstract class BaseEntityService extends HttpSession {
         update: IModifications,
         throwWhenNotFound: boolean = false): Promise<void> {
         const model = await this.model();
+        using busy = this.createBusyIndicator(false);
         const keys = [];
         for (const iterator of entities) {
             const entityType = model.for(iterator.$type);
@@ -533,13 +596,18 @@ export default abstract class BaseEntityService extends HttpSession {
         }
         const body = { keys, update, throwWhenNotFound };
         const url = `${this.url}bulk`;
-        await this.putJson({url, body});
+        let results = await FetchBuilder.post(url)
+            .jsonBody(body)
+            .asJson();
+        results = this.resultConverter(results);
+        return results;
     }
 
     public async bulkDelete<T extends IClrEntity>(
         entities: T[],
         throwWhenNotFound: boolean = false): Promise<void> {
         const model = await this.model();
+        using busy = this.createBusyIndicator(false);
         const keys = [];
         for (const iterator of entities) {
             const entityType = model.for(iterator.$type);
@@ -551,26 +619,31 @@ export default abstract class BaseEntityService extends HttpSession {
         }
         const url = `${this.url}bulk`;
         const body = { keys, throwWhenNotFound };
-        await this.deleteJson({
-            url,
-            body
-        });
+        // await this.deleteJson({
+        //     url,
+        //     body
+        // });
+        let results = await FetchBuilder.delete(url)
+            .jsonBody(body)
+            .asJson();
+        results = this.resultConverter(results);
+        return results;
     }
 
-    protected async fetchJson<T>(options: IHttpRequest): Promise<T> {
-        if (!this.createBusyIndicator || options?.hideActivityIndicator) {
-            return await super.fetchJson(options);
-        }
-        const disposable = this.createBusyIndicator(options);
-        try {
-            return await super.fetchJson(options);
-        } finally {
-            disposable?.dispose();
-        }
-    }
+    // protected async fetchResponse<T>(options: IHttpRequest): Promise<T> {
+    //     if (!this.createBusyIndicator || options?.hideActivityIndicator) {
+    //         return await super.fetchResponse(options);
+    //     }
+    //     const disposable = this.createBusyIndicator(options);
+    //     try {
+    //         return await super.fetchResponse(options);
+    //     } finally {
+    //         disposable?.dispose();
+    //     }
+    // }
 
-    protected createBusyIndicator(options: IHttpRequest) {
-        return { dispose() {}};
+    protected createBusyIndicator(hideActivityIndicator = false) {
+        return { [Symbol.dispose]() {}};
     }
 }
 
