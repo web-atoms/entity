@@ -461,7 +461,7 @@ export default abstract class BaseEntityService extends TaskManager {
         // }) as Promise<T>;
     }
 
-    buildRunUrl<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
+    run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
         args = void 0 as any[],
         cacheSeconds = 0,
         cacheVersion = void 0 as any
@@ -482,51 +482,7 @@ export default abstract class BaseEntityService extends TaskManager {
         if (cacheVersion) {
             usp.append("cv", cacheVersion);
         }
-        return `${this.url}run/${$type}/${method as any}?${usp.toString()}`;
-    }
-    
-    async runAsText<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
-        args = void 0 as any[],
-        cacheSeconds = 0,
-        cacheVersion = void 0 as any,
-        cancelToken = void 0 as CancelToken
-    } = {
-    }) {
-        using busy = this.createBusyIndicator(false);
-        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion});
-        return await FetchBuilder.get(url)
-            .cancelToken(cancelToken)
-            .asText();
-    }
-
-    async runAsBlob<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
-        args = void 0 as any[],
-        cacheSeconds = 0,
-        cacheVersion = void 0 as any,
-        cancelToken = void 0 as CancelToken
-    } = {
-    }) {
-        using busy = this.createBusyIndicator(false);
-        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion});
-        return await FetchBuilder.get(url)
-            .cancelToken(cancelToken)
-            .asBlob();
-    }
-
-    async run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
-        args = void 0 as any[],
-        cacheSeconds = 0,
-        cacheVersion = void 0 as any,
-        cancelToken = void 0 as CancelToken
-    } = {
-    }) {
-        using busy = this.createBusyIndicator(false);
-        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion});
-        let result = await FetchBuilder.get(url)
-            .cancelToken(cancelToken)
-            .asJson();
-        result = this.resultConverter(result);
-        return result as any;
+        return FetchBuilder.get(`${this.url}run/${$type}/${method as any}?${usp.toString()}`).jsonPostProcessor(this.resultConverter);
     }
 
 

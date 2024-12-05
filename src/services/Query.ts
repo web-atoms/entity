@@ -3,6 +3,7 @@ import IPagedList from "../models/IPagedList";
 import type BaseEntityService from "./BaseEntityService";
 import type { ICollection, IListParams, IModel, IPagedListParams, IQueryMethod } from "./BaseEntityService";
 import StringHelper from "./StringHelper";
+import FetchBuilder from "@web-atoms/core/dist/services/FetchBuilder";
 
 export type stepTypes = "Day" | "Month" | "Year" | "Week" | "Hour";
 
@@ -303,7 +304,7 @@ export default class Query<T> {
         return r.items;
     }
 
-    public toPagedList(
+    async toPagedList(
         {
             start = 0,
             size = 100,
@@ -325,6 +326,9 @@ export default class Query<T> {
             queryFunction,
             args
         } = this.context;
+
+        // @ts-expect-error
+        using busy = service.createBusyIndicator(hideActivityIndicator);
 
         const trace = traceQuery;
         const methods = JSON.stringify(this.methods);
@@ -348,15 +352,15 @@ export default class Query<T> {
             fm.append("expandable", "1");
         }
         const encodedMethods = fm.toString();
+        let result;
         if (encodedMethods.length > 1824) {
             if (cacheSeconds > 0) {
                 throw new Error("Generated query too big for caching");
             }
             url = `${service.url}methods/${name}`;
-            return (service as any).postJson({
-                url,
-                cancelToken,
-                body: {
+            result = await FetchBuilder.post(url)
+                .cancelToken(cancelToken)
+                .jsonBody({
                     methods: this.methods,
                     start,
                     size,
@@ -366,8 +370,11 @@ export default class Query<T> {
                     expandable: expandable ? 1 : void 0,
                     function: queryFunction || void 0,
                     args: queryFunction ? args : void 0
-                }
-            });
+                })
+                .asJson();
+            // @ts-expect-error
+            result = service.resultConverter(result);
+            return result;
         }
         if (cacheSeconds > 0) {
             fm.append("cache", cacheSeconds.toString());
@@ -378,12 +385,19 @@ export default class Query<T> {
         } else {
         }
         url  = `${service.url}query/${name}?${fm.toString()}`;
+        result = await FetchBuilder.get(url)
+            .cancelToken(cancelToken)
+            .asJson();
+        // @ts-expect-error
+        return service.resultConverter(result);
         // @ts-ignore
-        return service.getJson({
-            url,
-            cancelToken,
-            hideActivityIndicator
-        });
+        // return service.getJson({
+        //     url,
+        //     cancelToken,
+        //     hideActivityIndicator
+        // });
+
+
     }
 
     protected thenInclude(a): any {
