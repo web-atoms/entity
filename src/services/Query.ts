@@ -313,7 +313,8 @@ export default class Query<T> {
             splitInclude = false,
             cacheSeconds = 0,
             cacheImmutable = cacheSeconds > 0,
-            count = true
+            count = true,
+            expandable
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         let url;
 
@@ -343,6 +344,9 @@ export default class Query<T> {
             fm.append("function", queryFunction);
             fm.append("args", JSON.stringify(args ?? "[]"));
         }
+        if (expandable) {
+            fm.append("expandable", "1");
+        }
         const encodedMethods = fm.toString();
         if (encodedMethods.length > 1824) {
             if (cacheSeconds > 0) {
@@ -359,6 +363,7 @@ export default class Query<T> {
                     split: splitInclude,
                     count,
                     trace,
+                    expandable: expandable ? 1 : void 0,
                     function: queryFunction || void 0,
                     args: queryFunction ? args : void 0
                 }

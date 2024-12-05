@@ -271,6 +271,11 @@ export interface IListParams {
      * Split server side includes
      */
     splitInclude?: boolean;
+
+    /**
+     * Includes encrypted $key
+     */
+    expandable?: boolean;
 }
 export interface IPagedListParams extends IListParams {
     start?: number;
