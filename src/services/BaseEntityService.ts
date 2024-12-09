@@ -461,7 +461,7 @@ export default abstract class BaseEntityService extends TaskManager {
         // }) as Promise<T>;
     }
 
-    run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, {
+    buildRunUrl<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, {
         args = void 0 as any[],
         cacheSeconds = 0,
         cacheVersion = void 0 as any
@@ -482,7 +482,17 @@ export default abstract class BaseEntityService extends TaskManager {
         if (cacheVersion) {
             usp.append("cv", cacheVersion);
         }
-        return FetchBuilder.get(`${this.url}run/${$type}/${method as any}?${usp.toString()}`).jsonPostProcessor(this.resultConverter);
+        return `${this.url}run/${$type}/${method as any}?${usp.toString()}`;
+    }
+
+    run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, {
+        args = void 0 as any[],
+        cacheSeconds = 0,
+        cacheVersion = void 0 as any
+    } = {
+    }) {
+        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion });
+        return FetchBuilder.get(url).jsonPostProcessor(this.resultConverter);
     }
 
 
