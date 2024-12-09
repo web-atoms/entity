@@ -435,7 +435,7 @@ export default abstract class BaseEntityService extends TaskManager {
         return this.resultConverter(result);
     }
 
-    async invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, ... args: any[]) {
+    async invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, ... args: any[]) {
         using busy = this.createBusyIndicator(false);
         // will send keys only...
         const entity = {
@@ -461,7 +461,7 @@ export default abstract class BaseEntityService extends TaskManager {
         // }) as Promise<T>;
     }
 
-    run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: IClrEntity, {
+    run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, {
         args = void 0 as any[],
         cacheSeconds = 0,
         cacheVersion = void 0 as any
