@@ -411,6 +411,18 @@ export default abstract class BaseEntityService extends TaskManager {
     query<T extends IClrEntity, TR>(m: IModel<T, TR>,
             queryFunction?: keyof TR,
             ... args: any[]): Query<T> {
+        let entityKey;
+        if (args.length) {
+            const first = args[0];
+            if (first) {
+                const { $key, $type } = first;
+                if ($key && $type) {
+                    // this is an entity, and must be sent as an entity key
+                    entityKey = $key;
+                    args.splice(0, 1);
+                }
+            }
+        }
         return new Query({
             service: this,
             name: m.name,

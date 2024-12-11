@@ -128,6 +128,7 @@ interface IQueryContext {
     traceQuery?: boolean;
     queryFunction?: string;
     args?: any[];
+    entityKey?: string;
     queryProcessor?: "DotNet" | "JavaScript"
 }
 
@@ -324,6 +325,7 @@ export default class Query<T> {
             name,
             service,
             queryFunction,
+            entityKey,
             args
         } = this.context;
 
@@ -347,6 +349,9 @@ export default class Query<T> {
         if (queryFunction) {
             fm.append("function", queryFunction);
             fm.append("args", JSON.stringify(args ?? "[]"));
+            if (entityKey) {
+                fm.append("entityKey", entityKey);
+            }
         }
         if (expandable) {
             fm.append("expandable", "1");
@@ -369,7 +374,8 @@ export default class Query<T> {
                     trace,
                     expandable: expandable ? 1 : void 0,
                     function: queryFunction || void 0,
-                    args: queryFunction ? args : void 0
+                    args: queryFunction ? args : void 0,
+                    entityKey: entityKey ?? void 0
                 })
                 .asJson();
             // @ts-expect-error
