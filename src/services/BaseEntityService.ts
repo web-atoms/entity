@@ -376,6 +376,8 @@ export class Model<T> implements IModel<T> {
     }
 }
 
+export type IPrimitive = string | null | number | boolean;
+
 export default abstract class BaseEntityService extends TaskManager {
 
     public url: string = "/api/entity/";
@@ -410,7 +412,7 @@ export default abstract class BaseEntityService extends TaskManager {
 
     query<T extends IClrEntity, TR>(m: IModel<T, TR>,
             queryFunction?: keyof TR,
-            ... args: any[]): Query<T> {
+            ... args: IPrimitive[]): Query<T> {
         return new Query({
             service: this,
             name: m.name,
@@ -423,7 +425,7 @@ export default abstract class BaseEntityService extends TaskManager {
     queryEntity<T extends IClrEntity, TR>(m: IModel<T, TR>,
         entity: T,
         queryFunction?: keyof TR,
-        ... args: any[]): Query<T> {
+        ... args: IPrimitive[]): Query<T> {
         let entityKey;
         const { $key } = entity;
         if (!$key) {
