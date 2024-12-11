@@ -420,6 +420,10 @@ export default abstract class BaseEntityService extends TaskManager {
         });
     }
 
+    as<TR>() {
+        return this as any as Query<TR>;
+    }
+
     async delete<T extends IClrEntity>(body: T): Promise<void> {
         using busy = this.createBusyIndicator(false);
         const url = this.url;
