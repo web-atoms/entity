@@ -472,6 +472,7 @@ export default abstract class BaseEntityService extends TaskManager {
         }
 
         const result = await FetchBuilder.post(`${this.url}invoke/${entity.$type}/${method as any}`)
+            .withFetchProxy((r, i) => this.queueRun(() => fetch(r, i)))
             .jsonBody({ entity, args })
             .asJson<T>();
 
@@ -518,7 +519,9 @@ export default abstract class BaseEntityService extends TaskManager {
     } = {
     }) {
         const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion });
-        return FetchBuilder.get(url).jsonPostProcessor(this.resultConverter);
+        return FetchBuilder.get(url)
+            .withFetchProxy((r, i) => this.queueRun(() => fetch(r, i)))
+            .jsonPostProcessor(this.resultConverter);
     }
 
 
