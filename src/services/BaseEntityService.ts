@@ -512,6 +512,14 @@ export default abstract class BaseEntityService extends TaskManager {
         return `${this.url}run/${$type}/${method as any}?${usp.toString()}`;
     }
 
+    /**
+     * This method will execute external function for the enityt that has $key included.
+     * @param m model
+     * @param method extenral method name
+     * @param argEntity entity
+     * @param param3
+     * @returns 
+     */
     run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, {
         args = void 0 as any[],
         cacheSeconds = 0,
@@ -524,6 +532,29 @@ export default abstract class BaseEntityService extends TaskManager {
             .jsonPostProcessor(this.resultConverter);
     }
 
+    /**
+     * This method will execute external function for the entity that does not have $key included.
+     * This will cause read filter to be executed before the actual function exectution.
+     * @param m model
+     * @param method method name
+     * @param argEntity entity
+     * @param args arguments
+     * @returns 
+     */
+    async runFiltered<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, ... args: any[]) {
+        using busy = this.createBusyIndicator(false);
+        // will send keys only...
+        const keys = {
+        };
+        for(const key of m.schema.keys) {
+            keys[key.name] = argEntity[key.name];
+        }
+        
+        return FetchBuilder.post(`${this.url}run/${m.name}/${method as any}`)
+            .withFetchProxy((r, i) => this.queueRun(() => fetch(r, i)))
+            .jsonBody({ keys, args })
+            .jsonPostProcessor(this.resultConverter);
+    }
 
     public save<T extends IClrEntity>(body: T, cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T>;
     public save<T extends IClrEntity>(body: T[], cloner?: (c: Cloner<T>) => Cloner<T>, trace?: boolean): Promise<T[]>;
