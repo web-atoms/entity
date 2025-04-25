@@ -356,9 +356,9 @@ export default class Query<T> {
         if (queryFunction) {
             fm.append("function", queryFunction);
             fm.append("args", JSON.stringify(args ?? "[]"));
-            if (entityKey) {
-                fm.append("entityKey", entityKey);
-            }
+        }
+        if (entityKey) {
+            fm.append("entityKey", entityKey);
         }
         if (navigation) {
             fm.append("navigation", navigation);
