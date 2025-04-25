@@ -149,6 +149,12 @@ export default class Query<T> {
         return this.process("where", tOrP, q) as any;
     }
 
+    public union<TR>(q: (x: T) => any): Query<T>;
+    public union<TP>(p: TP, q: (p: TP) => (x: T) => any): Query<T>;
+    public union<TP>(tOrP: TP | T, q?: (p: TP) => (x: T) => any): Query<T> {
+        return this.process("union", tOrP, q) as any;
+    }
+
     public joinDateRange(
         start: DateTime,
         end: DateTime,
