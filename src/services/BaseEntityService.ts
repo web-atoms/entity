@@ -374,6 +374,8 @@ export class Model<T> implements IModel<T> {
 
 export type IPrimitive = string | null | number | boolean;
 
+export type ArrayItem<T> = T extends Array<infer T> ? T : never;
+
 export default abstract class BaseEntityService extends TaskManager {
 
     public url: string = "/api/entity/";
@@ -418,14 +420,16 @@ export default abstract class BaseEntityService extends TaskManager {
         });
     }
 
-    queryNavigation<T extends IClrEntity, PR extends keyof T>(entity: T, navigation: PR): Query<T[PR]> {
+    queryNavigation<T extends IClrEntity, PR extends keyof T>(entity: T, navigation: PR): Query<ArrayItem<T[PR]>>
+    queryNavigation<T extends IClrEntity, PR extends keyof T>(entity: T, navigation: PR): Query<T[PR]>
+    queryNavigation(entity: any, navigation: any): any {
     const name = entity.$type;
     const { $key } = entity;
     return new Query({
         service: this,
         name,
         entityKey: $key,
-        navigation: navigation as string
+        navigation
     });
 }
 
