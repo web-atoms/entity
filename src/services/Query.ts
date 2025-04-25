@@ -125,6 +125,7 @@ export class QueryComposer<Q> {
 interface IQueryContext {
     service: BaseEntityService;    
     name: string;
+    navigation?: string;
     traceQuery?: boolean;
     queryFunction?: string;
     args?: any[];
@@ -321,8 +322,7 @@ export default class Query<T> {
             splitInclude = false,
             cacheSeconds = 0,
             cacheImmutable = cacheSeconds > 0,
-            count = true,
-            expandable
+            count = true
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         let url;
 
@@ -332,6 +332,7 @@ export default class Query<T> {
             service,
             queryFunction,
             entityKey,
+            navigation,
             args
         } = this.context;
 
@@ -359,8 +360,8 @@ export default class Query<T> {
                 fm.append("entityKey", entityKey);
             }
         }
-        if (expandable) {
-            fm.append("expandable", "1");
+        if (navigation) {
+            fm.append("navigation", navigation);
         }
         const encodedMethods = fm.toString();
         let result;
@@ -377,8 +378,8 @@ export default class Query<T> {
                     size,
                     split: splitInclude,
                     count,
+                    navigation,
                     trace,
-                    expandable: expandable ? 1 : void 0,
                     function: queryFunction || void 0,
                     args: queryFunction ? args : void 0,
                     entityKey: entityKey ?? void 0

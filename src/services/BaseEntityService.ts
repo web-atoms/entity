@@ -275,10 +275,6 @@ export interface IListParams {
      */
     splitInclude?: boolean;
 
-    /**
-     * Includes encrypted $key
-     */
-    expandable?: boolean;
 }
 export interface IPagedListParams extends IListParams {
     start?: number;
@@ -421,6 +417,17 @@ export default abstract class BaseEntityService extends TaskManager {
             args
         });
     }
+
+    queryNavigation<T extends IClrEntity, PR extends keyof T>(entity: T, navigation: PR): Query<T[PR]> {
+    const name = entity.$type;
+    const { $key } = entity;
+    return new Query({
+        service: this,
+        name,
+        entityKey: $key,
+        navigation: navigation as string
+    });
+}
 
     queryEntity<T extends IClrEntity, TR>(m: IModel<T, TR>,
         entity: T,
