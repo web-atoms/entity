@@ -472,13 +472,14 @@ export default abstract class BaseEntityService extends TaskManager {
         return this.resultConverter(result);
     }
 
-    async invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, ... args: any[]) {
+    async invoke<T extends IClrEntity, TA, TQ>(argEntity: T, method: keyof TA,  ... args: any[]) {
         using busy = this.createBusyIndicator(false);
         // will send keys only...
+        const m = (await this.model()).for(argEntity.$type);
         const entity = {
             $type: m.name
         };
-        for(const key of m.schema.keys) {
+        for(const key of m.keys) {
             entity[key.name] = argEntity[key.name];
         }
 
@@ -499,7 +500,7 @@ export default abstract class BaseEntityService extends TaskManager {
         // }) as Promise<T>;
     }
 
-    buildRunUrl<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, {
+    buildRunUrl<T extends IClrEntity, TA, TQ>(argEntity: T, method: keyof TA, {
         args = void 0 as any[],
         cacheSeconds = 0,
         cacheVersion = void 0 as any
@@ -531,13 +532,13 @@ export default abstract class BaseEntityService extends TaskManager {
      * @param param3
      * @returns 
      */
-    run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, {
+    run<T extends IClrEntity, TA, TQ>(argEntity: T,method: keyof TA, {
         args = void 0 as any[],
         cacheSeconds = 0,
         cacheVersion = void 0 as any
     } = {
     }) {
-        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion });
+        const url = this.buildRunUrl(argEntity, method, { args, cacheSeconds, cacheVersion });
         return FetchBuilder.get(url)
             .withFetchProxy((r, i) => this.queueRun(() => fetch(r, i)))
             .jsonPostProcessor(this.resultConverter);
@@ -552,12 +553,14 @@ export default abstract class BaseEntityService extends TaskManager {
      * @param args arguments
      * @returns 
      */
-    async runFiltered<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: Partial<T>, ... args: any[]) {
+    async runFiltered<T extends IClrEntity, TA, TQ>(argEntity: T, method: keyof TA, ... args: any[]) {
+        const context = await this.model();
         using busy = this.createBusyIndicator(false);
         // will send keys only...
         const keys = {
         };
-        for(const key of m.schema.keys) {
+        const m = context.for(argEntity.$type);
+        for(const key of m.keys) {
             keys[key.name] = argEntity[key.name];
         }
         
