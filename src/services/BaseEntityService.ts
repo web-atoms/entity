@@ -476,16 +476,21 @@ export default abstract class BaseEntityService extends TaskManager {
         using busy = this.createBusyIndicator(false);
         // will send keys only...
         const m = (await this.model()).for(argEntity.$type);
-        const entity = {
-            $type: m.name
-        };
-        for(const key of m.keys) {
-            entity[key.name] = argEntity[key.name];
+
+        const { $type, $key: key } = argEntity;
+
+        let keys = void 0;
+        if (!key) {
+            const keys = {
+            };
+            for(const key of m.keys) {
+                keys[key.name] = argEntity[key.name];
+            }
         }
 
-        const result = await FetchBuilder.post(`${this.url}invoke/${entity.$type}/${method as any}`)
+        const result = await FetchBuilder.post(`${this.url}invoke/${$type}/${method as any}`)
             .withFetchProxy((r, i) => this.queueRun(() => fetch(r, i)))
-            .jsonBody({ entity, args })
+            .jsonBody({ key, keys, args })
             .asJson<T>();
 
         return this.resultConverter(result);
