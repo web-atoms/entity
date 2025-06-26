@@ -473,7 +473,7 @@ export default abstract class BaseEntityService extends TaskManager {
     }
 
     async invoke<T extends IClrEntity, TA, TQ>(argEntity: T, method: keyof TA,  ... args: any[]) {
-        using busy = this.createBusyIndicator(false);
+        using _busy = this.createBusyIndicator(false);
         // will send keys only...
         const m = (await this.model()).for(argEntity.$type);
 
@@ -481,7 +481,7 @@ export default abstract class BaseEntityService extends TaskManager {
 
         let keys = void 0;
         if (!key) {
-            const keys = {
+            keys = {
             };
             for(const key of m.keys) {
                 keys[key.name] = argEntity[key.name];
