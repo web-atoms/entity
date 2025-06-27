@@ -472,7 +472,7 @@ export default abstract class BaseEntityService extends TaskManager {
         return this.resultConverter(result);
     }
 
-    async invoke<T extends IClrEntity, TA, TQ>(m: IModel<TA, TQ, TA>, method: keyof TA, argEntity: T,  ... args: any[]) {
+    async invoke<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: T,  ... args: any[]) {
         using _busy = this.createBusyIndicator(false);
         // will send keys only...
         // const m = (await this.model()).for(argEntity.$type);
