@@ -458,24 +458,24 @@ export default abstract class BaseEntityService extends TaskManager {
     }
 
     async delete<T extends IClrEntity>(body: T): Promise<void> {
-        using busy = this.createBusyIndicator(false);
+        using _busy = this.createBusyIndicator(false);
         const url = this.url;
         // return this.deleteJson({url, body});
         return await FetchBuilder.delete(url).jsonBody(body).asJson();
     }
 
     async insert(body: IClrEntity): Promise<IClrEntity> {
-        using busy = this.createBusyIndicator(false);
+        using _busy = this.createBusyIndicator(false);
         const url = this.url;
         // return this.putJson({url, body});
         const result = await FetchBuilder.put(url).jsonBody(body).asJson();
         return this.resultConverter(result);
     }
 
-    async invoke<T extends IClrEntity, TA, TQ>(argEntity: T, method: keyof TA,  ... args: any[]) {
+    async invoke<T extends IClrEntity, TA, TQ>(m: IModel<TA, TQ, TA>, method: keyof TA, argEntity: T,  ... args: any[]) {
         using _busy = this.createBusyIndicator(false);
         // will send keys only...
-        const m = (await this.model()).for(argEntity.$type);
+        // const m = (await this.model()).for(argEntity.$type);
 
         const { $type, $key: key } = argEntity;
 
@@ -483,7 +483,7 @@ export default abstract class BaseEntityService extends TaskManager {
         if (!key) {
             keys = {
             };
-            for(const key of m.keys) {
+            for(const key of m.schema.keys) {
                 keys[key.name] = argEntity[key.name];
             }
         }
@@ -505,7 +505,7 @@ export default abstract class BaseEntityService extends TaskManager {
         // }) as Promise<T>;
     }
 
-    buildRunUrl<T extends IClrEntity, TA, TQ>(argEntity: T, method: keyof TA, {
+    buildRunUrl<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: T, {
         args = void 0 as any[],
         cacheSeconds = 0,
         cacheVersion = void 0 as any
@@ -530,20 +530,20 @@ export default abstract class BaseEntityService extends TaskManager {
     }
 
     /**
-     * This method will execute external function for the enityt that has $key included.
+     * This method will execute external function for the entity that has $key included.
      * @param m model
-     * @param method extenral method name
+     * @param method external method name
      * @param argEntity entity
      * @param param3
      * @returns 
      */
-    run<T extends IClrEntity, TA, TQ>(argEntity: T,method: keyof TA, {
+    run<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: T,{
         args = void 0 as any[],
         cacheSeconds = 0,
         cacheVersion = void 0 as any
     } = {
     }) {
-        const url = this.buildRunUrl(argEntity, method, { args, cacheSeconds, cacheVersion });
+        const url = this.buildRunUrl(m, method, argEntity, { args, cacheSeconds, cacheVersion });
         return FetchBuilder.get(url)
             .withFetchProxy((r, i) => this.queueRun(() => fetch(r, i)))
             .jsonPostProcessor(this.resultConverter);
@@ -551,21 +551,21 @@ export default abstract class BaseEntityService extends TaskManager {
 
     /**
      * This method will execute external function for the entity that does not have $key included.
-     * This will cause read filter to be executed before the actual function exectution.
+     * This will cause read filter to be executed before the actual function execution.
      * @param m model
      * @param method method name
      * @param argEntity entity
      * @param args arguments
      * @returns 
      */
-    async runFiltered<T extends IClrEntity, TA, TQ>(argEntity: T, method: keyof TA, ... args: any[]) {
-        const context = await this.model();
-        using busy = this.createBusyIndicator(false);
+    async runFiltered<T extends IClrEntity, TA, TQ>(m: IModel<T, TQ, TA>, method: keyof TA, argEntity: T, ... args: any[]) {
+        // const context = await this.model();
+        using _busy = this.createBusyIndicator(false);
         // will send keys only...
         const keys = {
         };
-        const m = context.for(argEntity.$type);
-        for(const key of m.keys) {
+        // const m = context.for(argEntity.$type);
+        for(const key of m.schema.keys) {
             keys[key.name] = argEntity[key.name];
         }
         
@@ -581,7 +581,7 @@ export default abstract class BaseEntityService extends TaskManager {
         if (Array.isArray(body) && body.length === 0) {
             return body;
         }
-        using busy = this.createBusyIndicator(false);
+        using _busy = this.createBusyIndicator(false);
         let url = this.url;
         if (body instanceof Cloner) {
             body = body.copy;
