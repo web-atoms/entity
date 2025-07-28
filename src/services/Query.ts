@@ -10,6 +10,8 @@ export type stepTypes = "Day" | "Month" | "Year" | "Week" | "Hour";
 const replacer = /(===)|(!==)|(\(\s*\{)|(\.[a-zA-Z0-9]+)|([a-zA-Z0-9]+\s*\:\s*\{?)/g;
 
 export const convertToLinq = (x: string) => {
+    // make everything single line...
+    x = x.replace("\n", " ");
     x = x.replace(/(\s+)|((CastAs|EF)\_[0-9]\.default\.)/g, (s, first, second) => {
         if (s === first) {
             return " ";
@@ -33,6 +35,7 @@ export const convertToLinq = (x: string) => {
             case ".filter": return ".Where";
             case ".find": return ".FirstOrDefault";
             case ".includes": return ".Contains";
+            case ".count": return ".Count";
         }
         if (s.endsWith("{")) {
             const index = s.indexOf(":");
