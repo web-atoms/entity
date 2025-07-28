@@ -450,7 +450,8 @@ export default class Query<T> {
     }
 
     private convertToLinq(text: string) {
-        if(this.context.queryProcessor === "DotNet") {
+        if(this.context.service.queryProcessor === "DotNet"
+            || this.context.queryProcessor === "DotNet") {
             return convertToLinq(text);
         }
         return text.replace(/\s+/g, " ");
