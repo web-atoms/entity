@@ -1,6 +1,6 @@
 {
   "name": "@web-atoms/entity",
-  "version": "2.4.89",
+  "version": "2.5.1",
   "description": "TypeScript classes and controls to edit entities exposed with Entity Access Control",
   "main": "index.js",
   "scripts": {
@@ -14,15 +14,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@web-atoms/core": "^v2.4.30",
+    "@web-atoms/core": "^v2.5.2",
     "@web-atoms/date-time": "^1.1.0",
     "@web-atoms/module-loader": "^2.1.2",
-    "@web-atoms/web-controls": "^2.2.1",
+    "@web-atoms/web-controls": "^2.5.2",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@web-atoms/unit-test": "^1.0.8",
-    "tslib": "^2.4.1"
+    "tslib": "^2.8.1"
   },
   "bugs": {
     "url": "https://github.com/web-atoms/entity/issues"
