@@ -279,6 +279,7 @@ export interface IListParams {
 export interface IPagedListParams extends IListParams {
     start?: number;
     size?: number;
+    hasMore?: boolean;
     count?: boolean;
 }
 

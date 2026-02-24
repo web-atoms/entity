@@ -315,6 +315,11 @@ export default class Query<T> {
         return r.items;
     }
 
+    async toPage(p: Omit<Omit<IPagedListParams, "count">, "hasMore"> = {}) {
+        (p as any).hasMore = true;
+        return this.toPagedList(p);
+    }
+
     async toPagedList(
         {
             start = 0,
@@ -325,7 +330,8 @@ export default class Query<T> {
             splitInclude = false,
             cacheSeconds = 0,
             cacheImmutable = cacheSeconds > 0,
-            count = true
+            hasMore = false,
+            count = !hasMore
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         let url;
 
@@ -342,6 +348,10 @@ export default class Query<T> {
         // @ts-expect-error
         using busy = service.createBusyIndicator(hideActivityIndicator);
 
+        if (hasMore) {
+
+        }
+
         const trace = traceQuery;
         const methods = JSON.stringify(this.methods);
         const fm = new URLSearchParams();
@@ -352,7 +362,8 @@ export default class Query<T> {
         if (size) {
             fm.append("size", size.toString());
         }
-        fm.append("count", count.toString());
+        fm.append("count", count ? "true" : "false");
+        fm.append("hasMore", hasMore ? "true" : "false");
         if(trace) {
             fm.append("trace", trace ? "true" : "false");
         }
@@ -381,6 +392,7 @@ export default class Query<T> {
                     size,
                     split: splitInclude,
                     count,
+                    hasMore,
                     navigation,
                     trace,
                     function: queryFunction || void 0,
