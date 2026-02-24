@@ -315,7 +315,7 @@ export default class Query<T> {
         return r.items;
     }
 
-    async toPage(p: Omit<Omit<IPagedListParams, "count">, "hasMore"> = {}) {
+    async toPage(p: Omit<IPagedListParams, "count"> = {}) {
         (p as any).hasMore = true;
         return this.toPagedList(p);
     }
