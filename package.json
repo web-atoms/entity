@@ -8,8 +8,7 @@
     "postversion": "git push --follow-tags"
   },
   "repository": {
-    "type": "git",
-    "url": "git+https://github.com/web-atoms/entity.git"
+    "url": "https://github.com/web-atoms/entity"
   },
   "author": "",
   "license": "ISC",
