@@ -330,8 +330,8 @@ export default class Query<T> {
             splitInclude = false,
             cacheSeconds = 0,
             cacheImmutable = cacheSeconds > 0,
-            hasMore = false,
-            count = !hasMore
+            more = false,
+            count = !more
         }: IPagedListParams = {}): Promise<IPagedList<T>> {
         let url;
 
@@ -346,11 +346,7 @@ export default class Query<T> {
         } = this.context;
 
         // @ts-expect-error
-        using busy = service.createBusyIndicator(hideActivityIndicator);
-
-        if (hasMore) {
-
-        }
+        using _busy = service.createBusyIndicator(hideActivityIndicator);
 
         const trace = traceQuery;
         const methods = JSON.stringify(this.methods);
@@ -363,7 +359,7 @@ export default class Query<T> {
             fm.append("size", size.toString());
         }
         fm.append("count", count ? "true" : "false");
-        fm.append("hasMore", hasMore ? "true" : "false");
+        fm.append("more", more ? "true" : "false");
         if(trace) {
             fm.append("trace", trace ? "true" : "false");
         }
@@ -392,7 +388,7 @@ export default class Query<T> {
                     size,
                     split: splitInclude,
                     count,
-                    hasMore,
+                    more,
                     navigation,
                     trace,
                     function: queryFunction || void 0,
