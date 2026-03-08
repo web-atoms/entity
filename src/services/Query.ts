@@ -316,8 +316,8 @@ export default class Query<T> {
     }
 
     async toPage(p: Omit<IPagedListParams, "count"> = {}) {
-        (p as any).hasMore = true;
-        return this.toPagedList(p) as any as Promise<{ hasMore: boolean, items: T[] }>;
+        (p as any).more = true;
+        return this.toPagedList(p) as any as Promise<{ more: boolean, items: T[] }>;
     }
 
     async toPagedList(
