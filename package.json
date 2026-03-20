@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "postversion": "git push --follow-tags"
+    "postversion": "git push --follow-tags",
+    "push": "git add -A && git commit -m \"dep vb\" && npm version patch"
   },
   "repository": {
     "url": "https://github.com/web-atoms/entity"
@@ -13,11 +14,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@web-atoms/core": "^v2.5.2",
-    "@web-atoms/date-time": "^1.1.0",
+    "@web-atoms/core": "^2.5.20",
+    "@web-atoms/date-time": "^3.0.18",
     "@web-atoms/module-loader": "^2.1.2",
-    "@web-atoms/web-controls": "^2.5.2",
-    "reflect-metadata": "^0.1.13"
+    "@web-atoms/web-controls": "^2.5.42",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@web-atoms/unit-test": "^1.0.8",
