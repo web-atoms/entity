@@ -25,7 +25,8 @@
   "devDependencies": {
     "@web-atoms/unit-test": "^1.0.8",
     "@package-verse/esmpack": "^1.0.35",
-    "tslib": "^2.8.1"
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.3"
   },
   "bugs": {
     "url": "https://github.com/web-atoms/entity/issues"
