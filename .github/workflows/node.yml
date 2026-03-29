@@ -24,4 +24,6 @@ jobs:
       - run: tsc
       - run: npm run test
       - run: node ./node_modules/@web-atoms/ts-to-systemjs/index.js
+      - run: tsc -p tsconfig.esm.json
+      - run: node ./node_modules/@package-verse/esmpack/pack.js dist-esm
       - run: npm publish --access public
