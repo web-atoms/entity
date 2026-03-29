@@ -1,9 +1,9 @@
-import DateTime from "@web-atoms/date-time/dist/DateTime";
-import IPagedList from "../models/IPagedList";
-import type BaseEntityService from "./BaseEntityService";
-import type { ICollection, IListParams, IModel, IPagedListParams, IQueryMethod } from "./BaseEntityService";
-import StringHelper from "./StringHelper";
-import FetchBuilder from "@web-atoms/core/dist/services/FetchBuilder";
+import DateTime from "@web-atoms/date-time/dist/DateTime.js";
+import IPagedList from "../models/IPagedList.js";
+import type BaseEntityService from "./BaseEntityService.js";
+import type { ICollection, IListParams, IModel, IPagedListParams, IQueryMethod } from "./BaseEntityService.js";
+import StringHelper from "./StringHelper.js";
+import FetchBuilder from "@web-atoms/core/dist/services/FetchBuilder.js";
 
 export type stepTypes = "Day" | "Month" | "Year" | "Week" | "Hour";
 

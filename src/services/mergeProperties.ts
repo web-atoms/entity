@@ -1,4 +1,4 @@
-import cloneSource from "../models/cloneSource";
+import cloneSource from "../models/cloneSource.js";
 
 // export default function mergeProperties(src, target, visited = new Map()) {
 //     if (visited.has(src)) {

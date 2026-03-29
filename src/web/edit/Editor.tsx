@@ -1,9 +1,9 @@
-import Bind from "@web-atoms/core/dist/core/Bind";
-import XNode from "@web-atoms/core/dist/core/XNode";
-import { AtomControl } from "@web-atoms/core/dist/web/controls/AtomControl";
-import { AtomItemsControl } from "@web-atoms/core/dist/web/controls/AtomItemsControl";
-import { AtomWindow } from "@web-atoms/core/dist/web/controls/AtomWindow";
-import EditorViewModel, { IPropertyValue } from "./EditorViewModel";
+import Bind from "@web-atoms/core/dist/core/Bind.js";
+import XNode from "@web-atoms/core/dist/core/XNode.js";
+import { AtomControl } from "@web-atoms/core/dist/web/controls/AtomControl.js";
+import { AtomItemsControl } from "@web-atoms/core/dist/web/controls/AtomItemsControl.js";
+import { AtomWindow } from "@web-atoms/core/dist/web/controls/AtomWindow.js";
+import EditorViewModel, { IPropertyValue } from "./EditorViewModel.js";
 
 const BindProperty = Bind.forData<IPropertyValue>();
 

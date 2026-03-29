@@ -1,6 +1,6 @@
-import BaseEntityService, { IModel, Model } from "../../services/BaseEntityService";
-import HttpSession from "../../services/HttpSession";
-import { QueryProcessor } from "../../services/QueryProcessor";
+import BaseEntityService, { IModel, Model } from "../../services/BaseEntityService.js";
+import HttpSession from "../../services/HttpSession.js";
+import { QueryProcessor } from "../../services/QueryProcessor.js";
 
 interface IItem {
     $type: string, name: string, desc: string

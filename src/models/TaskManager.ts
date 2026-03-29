@@ -1,4 +1,4 @@
-import Queue from "./Queue";
+import Queue from "./Queue.js";
 
 const sleep = (n) => new Promise((r) => setTimeout(r, n));
 

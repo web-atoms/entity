@@ -1,11 +1,11 @@
-import Bind from "@web-atoms/core/dist/core/Bind";
-import XNode from "@web-atoms/core/dist/core/XNode";
-import { AtomComboBox } from "@web-atoms/core/dist/web/controls/AtomComboBox";
-import { AtomControl } from "@web-atoms/core/dist/web/controls/AtomControl";
-import { AtomItemsControl } from "@web-atoms/core/dist/web/controls/AtomItemsControl";
-import IClrEntity from "../../models/IClrEntity";
-import Editor from "../edit/Editor";
-import TableListViewModel from "./TableListViewModel";
+import Bind from "@web-atoms/core/dist/core/Bind.js";
+import XNode from "@web-atoms/core/dist/core/XNode.js";
+import { AtomComboBox } from "@web-atoms/core/dist/web/controls/AtomComboBox.js";
+import { AtomControl } from "@web-atoms/core/dist/web/controls/AtomControl.js";
+import { AtomItemsControl } from "@web-atoms/core/dist/web/controls/AtomItemsControl.js";
+import IClrEntity from "../../models/IClrEntity.js";
+import Editor from "../edit/Editor.js";
+import TableListViewModel from "./TableListViewModel.js";
 
 const BindEntity = Bind.forData<IClrEntity>();
 

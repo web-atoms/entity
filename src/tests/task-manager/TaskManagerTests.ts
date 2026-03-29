@@ -1,7 +1,7 @@
-import Test from "@web-atoms/unit-test/dist/Test";
-import TestItem from "@web-atoms/unit-test/dist/TestItem";
-import TaskManager from "../../models/TaskManager";
-import Assert from "@web-atoms/unit-test/dist/Assert";
+import Test from "@web-atoms/unit-test/dist/Test.js";
+import TestItem from "@web-atoms/unit-test/dist/TestItem.js";
+import TaskManager from "../../models/TaskManager.js";
+import Assert from "@web-atoms/unit-test/dist/Assert.js";
 
 const sleep = (n) => new Promise((r) => setTimeout(r, n));
 

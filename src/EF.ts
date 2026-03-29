@@ -1,4 +1,4 @@
-import DateTime from "@web-atoms/date-time/dist/DateTime";
+import DateTime from "@web-atoms/date-time/dist/DateTime.js";
 
 interface IDbFunctions {
 

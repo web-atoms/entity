@@ -1,10 +1,10 @@
-import { CancelToken } from "@web-atoms/core/dist/core/types";
-import IClrEntity from "../models/IClrEntity";
-import { EntityContext } from "../models/IEntityModel";
-import IPagedList from "../models/IPagedList";
-import BaseEntityService, { IBulkDeleteModel, IBulkUpdateModel, IModel, IQueryMethod } from "./BaseEntityService";
-import Query from "./Query";
-import { QueryProcessor } from "./QueryProcessor";
+import { CancelToken } from "@web-atoms/core/dist/core/types.js";
+import IClrEntity from "../models/IClrEntity.js";
+import { EntityContext } from "../models/IEntityModel.js";
+import IPagedList from "../models/IPagedList.js";
+import BaseEntityService, { IBulkDeleteModel, IBulkUpdateModel, IModel, IQueryMethod } from "./BaseEntityService.js";
+import Query from "./Query.js";
+import { QueryProcessor } from "./QueryProcessor.js";
 
 const replacer = /(\.[a-z0-9\_])|([a-z0-9\_]\(\))/ig;
 

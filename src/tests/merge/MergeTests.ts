@@ -1,8 +1,8 @@
-import Assert from "@web-atoms/unit-test/dist/Assert";
-import Test from "@web-atoms/unit-test/dist/Test";
-import TestItem from "@web-atoms/unit-test/dist/TestItem";
-import { Cloner } from "../../models/Cloner";
-import mergeProperties from "../../services/mergeProperties";
+import Assert from "@web-atoms/unit-test/dist/Assert.js";
+import Test from "@web-atoms/unit-test/dist/Test.js";
+import TestItem from "@web-atoms/unit-test/dist/TestItem.js";
+import { Cloner } from "../../models/Cloner.js";
+import mergeProperties from "../../services/mergeProperties.js";
 
 export default class MergeTests extends TestItem {
 

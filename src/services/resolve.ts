@@ -1,4 +1,4 @@
-import DateTime from "@web-atoms/date-time/dist/DateTime";
+import DateTime from "@web-atoms/date-time/dist/DateTime.js";
 
 export const dateFormatISORegEx = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/;
 

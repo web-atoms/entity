@@ -1,14 +1,14 @@
-import { CancelToken } from "@web-atoms/core/dist/core/types";
-import DateTime from "@web-atoms/date-time/dist/DateTime";
-import { Cloner } from "../models/Cloner";
-import IClrEntity, { IClrEntityLike } from "../models/IClrEntity";
-import IEntityModel, { EntityContext } from "../models/IEntityModel";
-import mergeProperties from "./mergeProperties";
-import Query, { IDateRange, IEntityWithDateRange, stepTypes } from "./Query";
-import resolve from "./resolve";
-import { QueryProcessor } from "./QueryProcessor";
-import TaskManager from "../models/TaskManager";
-import FetchBuilder from "@web-atoms/core/dist/services/FetchBuilder";
+import { CancelToken } from "@web-atoms/core/dist/core/types.js";
+import DateTime from "@web-atoms/date-time/dist/DateTime.js";
+import { Cloner } from "../models/Cloner.js";
+import IClrEntity, { IClrEntityLike } from "../models/IClrEntity.js";
+import IEntityModel, { EntityContext } from "../models/IEntityModel.js";
+import mergeProperties from "./mergeProperties.js";
+import Query, { IDateRange, IEntityWithDateRange, stepTypes } from "./Query.js";
+import resolve from "./resolve.js";
+import { QueryProcessor } from "./QueryProcessor.js";
+import TaskManager from "../models/TaskManager.js";
+import FetchBuilder from "@web-atoms/core/dist/services/FetchBuilder.js";
 
 (Symbol as any).asyncDispose ??= Symbol("asyncDispose");
 (Symbol as any).dispose ??= Symbol("dispose");

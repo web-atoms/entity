@@ -1,15 +1,15 @@
-import { CancelToken } from "@web-atoms/core/dist/core/types";
-import DISingleton from "@web-atoms/core/dist/di/DISingleton";
-import { Inject } from "@web-atoms/core/dist/di/Inject";
-import BaseUrl, { BaseService, Get, Path, Queries } from "@web-atoms/core/dist/services/http/RestService";
-import { NavigationService } from "@web-atoms/core/dist/services/NavigationService";
-import ReferenceService from "@web-atoms/core/dist/services/ReferenceService";
-import Action from "@web-atoms/core/dist/view-model/Action";
-import { AtomViewModel, Watch } from "@web-atoms/core/dist/view-model/AtomViewModel";
-import Load from "@web-atoms/core/dist/view-model/Load";
-import IClrEntity from "../../models/IClrEntity";
-import IPagedList from "../../models/IPagedList";
-import EntityService, { IMethodsFilter } from "../../services/BaseEntityService";
+import { CancelToken } from "@web-atoms/core/dist/core/types.js";
+import DISingleton from "@web-atoms/core/dist/di/DISingleton.js";
+import { Inject } from "@web-atoms/core/dist/di/Inject.js";
+import BaseUrl, { BaseService, Get, Path, Queries } from "@web-atoms/core/dist/services/http/RestService.js";
+import { NavigationService } from "@web-atoms/core/dist/services/NavigationService.js";
+import ReferenceService from "@web-atoms/core/dist/services/ReferenceService.js";
+import Action from "@web-atoms/core/dist/view-model/Action.js";
+import { AtomViewModel, Watch } from "@web-atoms/core/dist/view-model/AtomViewModel.js";
+import Load from "@web-atoms/core/dist/view-model/Load.js";
+import IClrEntity from "../../models/IClrEntity.js";
+import IPagedList from "../../models/IPagedList.js";
+import EntityService, { IMethodsFilter } from "../../services/BaseEntityService.js";
 
 export default class TableListViewModel extends AtomViewModel {
 

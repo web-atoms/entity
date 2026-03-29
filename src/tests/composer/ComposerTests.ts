@@ -1,9 +1,9 @@
-import Assert from "@web-atoms/unit-test/dist/Assert";
-import Test from "@web-atoms/unit-test/dist/Test";
-import TestItem from "@web-atoms/unit-test/dist/TestItem";
-import CastAs from "../../CastAs";
-import EF from "../../EF";
-import { convertToLinq, QueryComposer } from "../../services/Query";
+import Assert from "@web-atoms/unit-test/dist/Assert.js";
+import Test from "@web-atoms/unit-test/dist/Test.js";
+import TestItem from "@web-atoms/unit-test/dist/TestItem.js";
+import CastAs from "../../CastAs.js";
+import EF from "../../EF.js";
+import { convertToLinq, QueryComposer } from "../../services/Query.js";
 
 const match = (expected, result) => {
     Assert.equals(expected, convertToLinq(result.toString()));

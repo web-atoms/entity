@@ -1,7 +1,7 @@
-import Test from "@web-atoms/unit-test/dist/Test";
-import TestItem from "@web-atoms/unit-test/dist/TestItem";
-import ChangeSet from "../../models/ChangeSet";
-import Assert from "@web-atoms/unit-test/dist/Assert";
+import Test from "@web-atoms/unit-test/dist/Test.js";
+import TestItem from "@web-atoms/unit-test/dist/TestItem.js";
+import ChangeSet from "../../models/ChangeSet.js";
+import Assert from "@web-atoms/unit-test/dist/Assert.js";
 
 export default class ChangeSetTest extends TestItem {
 

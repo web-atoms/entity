@@ -1,7 +1,7 @@
-import { CancelToken } from "@web-atoms/core/dist/core/types";
-import JsonError from "@web-atoms/core/dist/services/http/JsonError";
-import Queue from "../models/Queue";
-import TaskManager from "../models/TaskManager";
+import { CancelToken } from "@web-atoms/core/dist/core/types.js";
+import JsonError from "@web-atoms/core/dist/services/http/JsonError.js";
+import Queue from "../models/Queue.js";
+import TaskManager from "../models/TaskManager.js";
 
 export type URIWithSearchParams = [string, {[k: string]: any}];
 

@@ -1,5 +1,5 @@
-import { ICollection } from "../services/BaseEntityService";
-import cloneSource from "./cloneSource";
+import { ICollection } from "../services/BaseEntityService.js";
+import cloneSource from "./cloneSource.js";
 
 const getKey = (target, value) => {
     for (const key in target) {
