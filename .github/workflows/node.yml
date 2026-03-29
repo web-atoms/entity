@@ -19,6 +19,7 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org/
       - run: npm install
+      - run: npm install -g typescript@5.9.3
       - run: tsc
       - run: npm run test
       - run: node ./node_modules/@web-atoms/ts-to-systemjs/index.js
