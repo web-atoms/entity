@@ -18,7 +18,6 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
-      - run: npm install -D @web-atoms/ts-to-systemjs
       - run: npm install
       - run: tsc
       - run: npm run test
